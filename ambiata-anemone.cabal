@@ -1,14 +1,17 @@
-name:                  ambiata-project
+name:                  ambiata-anemone
 version:               0.0.1
 license:               AllRightsReserved
 author:                Ambiata <info@ambiata.com>
 maintainer:            Ambiata <info@ambiata.com>
 copyright:             (c) 2015 Ambiata.
-synopsis:              ambiata-project
+synopsis:              Sea creatures: a collection of C functions, packaged as a Haskell library, with QuickCheck for testing.
 category:              System
 cabal-version:         >= 1.8
 build-type:            Simple
-description:           ambiata-project
+description:           The C standard library (libc) is rubbish and slow.
+                       We have been writing a few general purpose functions in C, for example int parsing, memory comparison, and some file-handling buffer stuff.
+                       I would like a repository where I can put different versions of these functions, with benchmarks, and quickcheck tests without muddying up Icicle, but it would have to be open source.
+
 
 library
   build-depends:
@@ -24,7 +27,7 @@ library
                        src
 
   exposed-modules:
-                       Paths_ambiata_project
+                       Paths_ambiata_anemone
                        Project
 
 test-suite test
@@ -39,7 +42,7 @@ test-suite test
 
   build-depends:
                        base                            >= 3          && < 5
-                     , ambiata-project
+                     , ambiata-anemone
                      , ambiata-disorder-core
                      , ambiata-disorder-corpus
                      , ambiata-p
