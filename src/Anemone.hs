@@ -1,4 +1,9 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE OverloadedStrings #-}
-module Project where
+module Anemone 
+  ( module A )
+  where
+
+import Anemone.Headers  as A
+
