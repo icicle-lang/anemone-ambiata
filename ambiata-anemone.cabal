@@ -18,7 +18,11 @@ library
                        base                            >= 3          && < 5
                      , transformers                    >= 0.3        && < 0.5
                      , either                          >= 4.3        && < 4.5
+                     , file-embed                      == 0.0.9
+                     , filepath                        == 1.3.*
                      , ambiata-p
+                     , bytestring                      == 0.10.*
+                     , text                            == 1.2.*
 
   ghc-options:
                        -Wall
@@ -28,7 +32,14 @@ library
 
   exposed-modules:
                        Paths_ambiata_anemone
-                       Project
+                       Anemone
+                       Anemone.Headers
+
+  include-dirs:     cbits
+  includes:         offsetmerge.h
+  c-sources:        cbits/offsetmerge.c
+  cc-options:       -std=c99 -O3 -msse4.2
+
 
 test-suite test
   type:                exitcode-stdio-1.0
@@ -48,3 +59,4 @@ test-suite test
                      , ambiata-p
                      , QuickCheck                      == 2.7.*
                      , quickcheck-instances            == 0.3.*
+
