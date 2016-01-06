@@ -12,6 +12,10 @@ description:           The C standard library (libc) is rubbish and slow.
                        We have been writing a few general purpose functions in C, for example int parsing, memory comparison, and some file-handling buffer stuff.
                        I would like a repository where I can put different versions of these functions, with benchmarks, and quickcheck tests without muddying up Icicle, but it would have to be open source.
 
+extra-source-files:
+    cbits/*.h
+    cbits/*.c
+
 
 library
   build-depends:
@@ -34,10 +38,11 @@ library
                        Paths_ambiata_anemone
                        Anemone
                        Anemone.Headers
+                       Anemone.Foreign.FFI
 
   include-dirs:     cbits
-  includes:         offsetmerge.h
-  c-sources:        cbits/offsetmerge.c
+  includes:         ffi.h
+  c-sources:        cbits/ffi.c
   cc-options:       -std=c99 -O3 -msse4.2
 
 
@@ -59,4 +64,21 @@ test-suite test
                      , ambiata-p
                      , QuickCheck                      == 2.7.*
                      , quickcheck-instances            == 0.3.*
+
+
+benchmark bench
+  type:                exitcode-stdio-1.0
+
+  main-is:             bench.hs
+
+  ghc-options:         -Wall -threaded -O2
+
+  hs-source-dirs:
+                       bench
+
+  build-depends:
+                       base                            >= 3          && < 5
+                     , ambiata-anemone
+                     , ambiata-p
+                     , criterion                       == 1.1.*
 
