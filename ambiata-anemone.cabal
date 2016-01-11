@@ -39,10 +39,21 @@ library
                        Anemone
                        Anemone.Headers
                        Anemone.Foreign.FFI
+                       Anemone.Foreign.Memcmp
+                       Anemone.Foreign.Memcmp.Base
+                       Anemone.Foreign.Memcmp.Bench
+                       Anemone.Foreign.Memcmp.Export
 
   include-dirs:     cbits
-  includes:         ffi.h
-  c-sources:        cbits/ffi.c
+
+  includes:         anemone_base.h
+                    anemone_ffi.h
+                    anemone_memcmp.h
+                    anemone_sse.h
+                    anemone_twiddle.h
+  c-sources:        cbits/anemone_ffi.c
+                    cbits/anemone_memcmp.c
+
   cc-options:       -std=c99 -O3 -msse4.2
 
 
@@ -66,8 +77,7 @@ test-suite test
                      , quickcheck-instances            == 0.3.*
 
 
-benchmark bench
-  type:                exitcode-stdio-1.0
+executable bench
 
   main-is:             bench.hs
 
@@ -81,4 +91,5 @@ benchmark bench
                      , ambiata-anemone
                      , ambiata-p
                      , criterion                       == 1.1.*
+                     , bytestring                      == 0.10.*
 
