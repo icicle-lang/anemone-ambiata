@@ -1,7 +1,7 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 module Anemone.Foreign.Memcmp (
-    module M
+    memcmp, memeq
   ) where
 
-import Anemone.Foreign.Memcmp.Export as M
+import Anemone.Foreign.Memcmp.Export

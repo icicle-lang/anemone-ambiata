@@ -41,7 +41,6 @@ library
                        Anemone.Foreign.FFI
                        Anemone.Foreign.Memcmp
                        Anemone.Foreign.Memcmp.Base
-                       Anemone.Foreign.Memcmp.Bench
                        Anemone.Foreign.Memcmp.Export
 
   include-dirs:     cbits
@@ -92,4 +91,7 @@ executable bench
                      , ambiata-p
                      , criterion                       == 1.1.*
                      , bytestring                      == 0.10.*
+
+  c-sources:        cbits/bench_memcmp.c
+  cc-options:       -std=c99 -O3 -msse4.2
 
