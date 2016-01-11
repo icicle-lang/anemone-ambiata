@@ -92,20 +92,22 @@ anemone_string_to_i64_v128(char** pp, char* pe, int64_t* out_val)
             in              += 16;
             m                = anemone_sse_load128(in);
             index            = anemone_sse_first_nondigit(m);
-            switch(index){
-                case 3:
-                 int_out = int_out * 10 + (in[index-3] - 48);
-                case 2:
-                 int_out = int_out * 10 + (in[index-2] - 48);
-                case 1:
-                 int_out = int_out * 10 + (in[index-1] - 48);
-                case 0:
-                 break;
-                    
-                default:
+            if (UNLIKELY(index > 3)) {
                 // fprintf(stderr, "ERROR NUMBER TOO BIG\n");
-                 return 1;
+                return 1;
             }
+
+            m                   = _mm_subs_epi8(m, zeros);
+            const uint64_t i3   = anemone_string_to_i64_v128_first_eight(m, index);
+            const __m128i lows       = _mm_cvtepu8_epi32(m);
+            const __m128i lo_muls    = anemone_sse_load128(powers_of_ten_multipliers + (8 - index));
+            const __m128i lo_mulled  = _mm_mullo_epi32(lo_muls, lows);
+            uint64_t sum             = anemone_sse_sum1_epi32(lo_mulled);
+
+            const uint64_t mul3 = powers_of_ten[index];
+            int_out = int_out * mul3 + i3;
+
+            return sum;
         }
 
     }

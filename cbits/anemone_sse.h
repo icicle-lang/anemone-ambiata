@@ -13,6 +13,14 @@ __m128i INLINE anemone_sse_load128(const void* mem)
     return _mm_loadu_si128((__m128i*)mem);
 }
 
+uint64_t INLINE anemone_sse_sum1_epi32(const __m128i a)
+{
+    const __m128i sum1 = _mm_hadd_epi32(a, a);
+    const __m128i sum2 = _mm_hadd_epi32(sum1, sum1);
+
+    return _mm_extract_epi32(sum2, 0);
+}
+
 /* return a[0] + a[1] + a[2] + a[3] + b[0] + b[1] + b[2] + b[3] */
 uint64_t INLINE anemone_sse_sum2_epi32(const __m128i a, const __m128i b)
 {
