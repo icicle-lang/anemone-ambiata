@@ -40,17 +40,13 @@ anemone_string_to_i64_v128_first_eight(const __m128i m, unsigned int index)
     const __m128i m_shifted  = _mm_srli_si128(m, 4);
     const __m128i highs      = _mm_cvtepu8_epi32(m_shifted);
 
-    const __m128i zeros      = _mm_setr_epi32(48, 48, 48, 48);
-    const __m128i low_digits = lows - zeros;
-    const __m128i hi_digits  = highs - zeros;
-
     const int pow_ten_offset = (index < 8) ? 8 - index : 0;
 
     const __m128i lo_muls    = anemone_sse_load128(powers_of_ten_multipliers + pow_ten_offset);
     const __m128i hi_muls    = anemone_sse_load128(powers_of_ten_multipliers + pow_ten_offset + 4);
 
-    const __m128i lo_mulled  = _mm_mullo_epi32(lo_muls, low_digits);
-    const __m128i hi_mulled  = _mm_mullo_epi32(hi_muls, hi_digits);
+    const __m128i lo_mulled  = _mm_mullo_epi32(lo_muls, lows);
+    const __m128i hi_mulled  = _mm_mullo_epi32(hi_muls, highs);
 
     uint64_t sum             = anemone_sse_sum2_epi32(hi_mulled, lo_mulled);
     return sum;
@@ -81,6 +77,8 @@ anemone_string_to_i64_v128(char** pp, char* pe, int64_t* out_val)
     }
 
     unsigned int index       = anemone_sse_first_nondigit(m);
+    const __m128i zeros      = _mm_set1_epi8(48);
+    m                        = _mm_subs_epi8(m, zeros);
 
     uint64_t int_out         = anemone_string_to_i64_v128_first_eight(m, index);
 
@@ -99,6 +97,7 @@ anemone_string_to_i64_v128(char** pp, char* pe, int64_t* out_val)
                 return 1;
             }
 
+            m                   = _mm_subs_epi8(m, zeros);
             const uint64_t i3   = anemone_string_to_i64_v128_first_eight(m, index);
             const uint64_t mul3 = powers_of_ten[index];
             int_out = int_out * mul3 + i3;
