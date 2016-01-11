@@ -5,11 +5,13 @@
 
 import qualified Anemone.Foreign.FFI as FoFFI
 import qualified Bench.Foreign.Memcmp as FoMemcmp
+import qualified Bench.Foreign.Atoi as FoAtoi
 
 import           Criterion.Main
 import           Criterion.Types (Config(..))
 
 import           System.IO (IO)
+import           Data.ByteString.Char8 ()
 
 import           P
 
@@ -20,6 +22,7 @@ main
  = defaultMainWith benchConfig
  [ bench_ffi
  , bench_memcmp
+ , bench_atoi
  ]
 
 benchConfig :: Config
@@ -76,4 +79,20 @@ bench_memcmp
 
   check2 f n
    = nf f n
+
+
+bench_atoi :: Benchmark
+bench_atoi
+ = bgroup "String to Int64"
+ [ go_all "v-1"                 FoAtoi.string_to_i64_bench
+ , go_all "v-128"               FoAtoi.string_to_i64_v128_bench
+ , go_all "stdlib"               FoAtoi.string_to_i64_std_bench
+ ]
+
+ where
+  go_all nm f
+   = bgroup nm
+   $ fmap (\str -> bench (show str) $ nf f str)
+   [ "0", "1", "-123", "123456", "-12345678", "1234567890", "-123456789012345", "1234567890123456789"
+   ]
 

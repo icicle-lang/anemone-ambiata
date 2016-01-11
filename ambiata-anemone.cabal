@@ -93,5 +93,6 @@ executable bench
                      , bytestring                      == 0.10.*
 
   c-sources:        cbits/bench_memcmp.c
+                    cbits/bench_atoi.c
   cc-options:       -std=c99 -O3 -msse4.2
 
