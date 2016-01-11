@@ -28,6 +28,7 @@ getCollatedHeaders
 getAllFiles :: [(FilePath, ByteString)]
 getAllFiles
  = List.sortBy (compare `on` fst)
+ $ filter (\(nm,_) -> "anemone_" `isPrefixOf` takeBaseName nm)
  $ $(embedDir "cbits")
 
 prepareHeader :: FilePath -> ByteString -> T.Text
