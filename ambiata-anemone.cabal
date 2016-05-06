@@ -42,16 +42,20 @@ library
                        Anemone.Foreign.Memcmp
                        Anemone.Foreign.Memcmp.Base
                        Anemone.Foreign.Memcmp.Export
+                       Anemone.Foreign.Atoi
 
   include-dirs:     cbits
 
   includes:         anemone_base.h
                     anemone_ffi.h
+                    anemone_atoi.h
+                    anemone_atoi_sse.h
                     anemone_memcmp.h
                     anemone_sse.h
                     anemone_twiddle.h
   c-sources:        cbits/anemone_ffi.c
                     cbits/anemone_memcmp.c
+                    cbits/anemone_atoi.c
 
   cc-options:       -std=c99 -O3 -msse4.2
 
