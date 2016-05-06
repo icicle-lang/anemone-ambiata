@@ -47,12 +47,12 @@ wrapAtoi f a
  $ \ip
  -> do  let end = plusPtr a' (B.length a)
         poke a'' a'
-        suc <- f a'' end ip
-        res <- peek ip
+        suc   <- f a'' end ip
+        res   <- peek ip
         return
-             $ case suc of
-                False -> Just res
-                True  -> Nothing
+             ( if   not suc
+               then Just res
+               else Nothing )
 
 
 
