@@ -8,8 +8,8 @@ bool INLINE anemone_text_is_digit (char c)
 
 const uint64_t text_iint_max_size = 20; /* 64-bit integer = 19 digits + sign */
 
-/* temporary: do not inline this so it's a fair comparison with atoi */
-bool __attribute__((noinline)) anemone_string_to_i64 (char **pp, char *pe, int64_t *output_ptr)
+bool
+anemone_string_to_i64 (char **pp, char *pe, int64_t *output_ptr)
 {
     char  *p           = *pp;
     uint64_t buffer_size = pe - p;

@@ -57,11 +57,14 @@ anemone_string_to_i64_v128_first_eight(const __m128i m, unsigned int index)
   parse string to signed 64-bit integer.
   does not strip whitespace.
  */
-/* temporary: do not inline this so it's a fair comparison with atoi */
-bool __attribute__((noinline))
+bool
 anemone_string_to_i64_v128(char** pp, char* pe, int64_t* out_val)
 {
     char* in = *pp;
+    uint64_t buffer_size = pe - in;
+    if (buffer_size == 0) {
+        return 1;
+    }
 
     __m128i m                = anemone_sse_load128(in);
     int64_t sign             = 1;
@@ -70,18 +73,22 @@ anemone_string_to_i64_v128(char** pp, char* pe, int64_t* out_val)
         in++;
         m                    = anemone_sse_load128(in);
         sign                 = -1;
-    } else if (_mm_extract_epi8(m, 0) == '+') {
-        in++;
-        m                    = anemone_sse_load128(in);
-        sign                 = 1;
+        buffer_size--;
     }
 
     unsigned int index       = anemone_sse_first_nondigit(m);
     const __m128i zeros      = _mm_set1_epi8(48);
     m                        = _mm_subs_epi8(m, zeros);
 
+    if (index > buffer_size) {
+        index = buffer_size;
+        buffer_size -= index;
+    }
     uint64_t int_out         = anemone_string_to_i64_v128_first_eight(m, index);
 
+    if (UNLIKELY(index == 0)) {
+        return 1;
+    }
     if (UNLIKELY(index > 8)) {
         m                    = _mm_srli_si128(m, 8);
         const uint64_t i2    = anemone_string_to_i64_v128_first_eight(m, index - 8);
@@ -92,13 +99,17 @@ anemone_string_to_i64_v128(char** pp, char* pe, int64_t* out_val)
             in              += 16;
             m                = anemone_sse_load128(in);
             index            = anemone_sse_first_nondigit(m);
+            if (index > buffer_size) {
+                index = buffer_size;
+                buffer_size -= index;
+            }
             if (UNLIKELY(index > 3)) {
                 // fprintf(stderr, "ERROR NUMBER TOO BIG\n");
                 return 1;
             }
 
-            m                   = _mm_subs_epi8(m, zeros);
-            const uint64_t i3   = anemone_string_to_i64_v128_first_eight(m, index);
+            m                        = _mm_subs_epi8(m, zeros);
+            const uint64_t i3        = anemone_string_to_i64_v128_first_eight(m, index);
             const __m128i lows       = _mm_cvtepu8_epi32(m);
             const __m128i lo_muls    = anemone_sse_load128(powers_of_ten_multipliers + (8 - index));
             const __m128i lo_mulled  = _mm_mullo_epi32(lo_muls, lows);
@@ -116,5 +127,4 @@ anemone_string_to_i64_v128(char** pp, char* pe, int64_t* out_val)
     *pp      = in + index;
     return 0;
 }
-
 

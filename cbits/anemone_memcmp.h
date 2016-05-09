@@ -58,7 +58,12 @@ anemone_memcmp8 (const char *as, const char* bs, uint64_t len)
         char a = as[i];
         char b = bs[i];
         if (a != b) {
-            return a - b;
+            /* We are doing an unsigned comparison, so:
+             * make sure we cast to an unsigned char
+             * then move into a signed 64-bit to hold negative result */
+            int64_t a_i = (uint8_t)a;
+            int64_t b_i = (uint8_t)b;
+            return a_i - b_i;
         }
     }
 
@@ -71,21 +76,50 @@ anemone_memcmp64 (const char *as, const char* bs, uint64_t len)
 {
     uint64_t rem = len;
     while (rem > 8) {
-        int64_t a = *(uint64_t*)as;
-        int64_t b = *(uint64_t*)bs;
+        uint64_t a = *(uint64_t*)as;
+        uint64_t b = *(uint64_t*)bs;
+
         if (a != b) {
-            return anemone_bswap64(a) - anemone_bswap64(b);
+            /* if they are different, we need to know which is bigger */
+            uint64_t a_s = anemone_bswap64(a);
+            uint64_t b_s = anemone_bswap64(b);
+            if (a_s > b_s) {
+              return 1;
+            } else {
+              return -1;
+            }
         }
+
         rem -= 8;
         as += 8;
         bs += 8;
     }
 
+    if (rem == 0)
+        return 0;
+
     uint64_t mask = anemone_remainder_mask64(rem);
 
-    int64_t a = anemone_bswap64(*(uint64_t*)as & mask);
-    int64_t b = anemone_bswap64(*(uint64_t*)bs & mask);
-    return a - b;
+    uint64_t a = anemone_bswap64(*(uint64_t*)as & mask);
+    uint64_t b = anemone_bswap64(*(uint64_t*)bs & mask);
+    if (a == b)
+       return 0;
+    else if (a > b)
+       return 1;
+    else return -1;
+
+    /* We lose the "magnitude" of the difference by doing these comparisons.
+     * We cannot directly return (a - b) because we end up with overflow issues.
+     * Perhaps something like this would be possible:
+     * By separating into 32-bits and comparing, we avoid overflow
+
+        int64_t diff1 = (a >> 4) - (b >> 4);
+        int64_t diff2 = (a & 0x00000000FFFFFFFF) - (a & 0x00000000FFFFFFFF);
+        if (diff1) {
+          return diff1;
+        }
+        return diff2;
+    */
 }
 
 INLINE
@@ -111,8 +145,8 @@ anemone_memcmp128 (const char* buf1, const char* buf2, uint64_t len)
         if (index < current_chunk) {
             /* If the index is less than current chunk, buf1[index] and buf2[index] are different */
             /* Get characters as ints so we can do signed subtract */
-            int char1 = buf1[index];
-            int char2 = buf2[index];
+            int char1 = (uint8_t)buf1[index];
+            int char2 = (uint8_t)buf2[index];
             /* Return the difference of the two */
             return char1 - char2;
         }
@@ -163,6 +197,9 @@ anemone_memeq64 (const char *as, const char* bs, uint64_t len)
         as += 8;
         bs += 8;
     }
+
+    if (rem == 0)
+        return 0;
 
     uint64_t mask = anemone_remainder_mask64(rem);
 

@@ -30,12 +30,8 @@ wrapCmp f a b
  $ \a'
  -> B.unsafeUseAsCString b
  $ \b'
- -> case f a' b' (min (B.length a) (B.length b)) of
-     0 -> return EQ
-     n | n > 0
-       -> return GT
-     _ | otherwise
-       -> return LT
+ -> let cmp = f a' b' (min (B.length a) (B.length b))
+    in  return (cmp `compare` 0)
 
 wrapEq  :: MemcmpT_Raw -> MemeqT
 wrapEq f a b
