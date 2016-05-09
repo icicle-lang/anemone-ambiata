@@ -22,14 +22,9 @@ import Data.Char (isDigit)
 testAtoi  :: Atoi.AtoiT
           -> B.ByteString -> Property
 testAtoi check a
- = let a' = pad a
-       r  = readMaybe' (BC.unpack a')
-   in  counterexample (show (a'))
-       (r === check a')
+ = let r  = readMaybe' (BC.unpack a)
+   in  (r === check a)
  where
-  -- Pad it with some stuff at the end, so we do not segfault.
-  pad x = x --  <> " A2345678123456781234567812345678"
-
   -- Our atoi does not remove leading whitespace
   readMaybe' ('-':xs)
    = fmap negate $ readDigits 0 xs

@@ -26,9 +26,7 @@ testCmp' good check a b
        ( (good a' b') === check a' b')
  where
   len = min (B.length a) (B.length b)
-  -- Pad it with some stuff at the end, so we do not segfault.
-  -- This is *really* weird.
-  pad x = (B.take len x) <> ""
+  pad x = B.take len x
 
 
 testCmp :: Base.MemcmpT -> B.ByteString -> B.ByteString -> Property

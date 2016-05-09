@@ -95,6 +95,9 @@ anemone_memcmp64 (const char *as, const char* bs, uint64_t len)
         bs += 8;
     }
 
+    if (rem == 0)
+        return 0;
+
     uint64_t mask = anemone_remainder_mask64(rem);
 
     uint64_t a = anemone_bswap64(*(uint64_t*)as & mask);
@@ -194,6 +197,9 @@ anemone_memeq64 (const char *as, const char* bs, uint64_t len)
         as += 8;
         bs += 8;
     }
+
+    if (rem == 0)
+        return 0;
 
     uint64_t mask = anemone_remainder_mask64(rem);
 
