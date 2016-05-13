@@ -46,6 +46,14 @@ library
 
   include-dirs:     cbits
 
+  install-includes: anemone_base.h
+                    anemone_ffi.h
+                    anemone_atoi.h
+                    anemone_atoi_sse.h
+                    anemone_memcmp.h
+                    anemone_sse.h
+                    anemone_twiddle.h
+
   includes:         anemone_base.h
                     anemone_ffi.h
                     anemone_atoi.h
@@ -53,6 +61,7 @@ library
                     anemone_memcmp.h
                     anemone_sse.h
                     anemone_twiddle.h
+
   c-sources:        cbits/anemone_ffi.c
                     cbits/anemone_memcmp.c
                     cbits/anemone_atoi.c
