@@ -81,7 +81,8 @@ test-suite test
                      , bytestring                      == 0.10.*
 
 
-executable bench
+benchmark bench
+  type:                exitcode-stdio-1.0
 
   main-is:             bench.hs
 
