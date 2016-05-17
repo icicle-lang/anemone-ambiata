@@ -20,13 +20,13 @@ extra-source-files:
 library
   build-depends:
                        base                            >= 3          && < 5
-                     , transformers                    >= 0.3        && < 0.5
-                     , either                          >= 4.3        && < 4.5
-                     , file-embed                      == 0.0.9
-                     , filepath                        == 1.3.*
                      , ambiata-p
                      , bytestring                      == 0.10.*
+                     , file-embed                      == 0.0.9
+                     , filepath                        == 1.3.*
                      , text                            == 1.2.*
+                     , transformers                    >= 0.3        && < 0.5
+                     , vector                          >= 0.10       && < 0.12
 
   ghc-options:
                        -Wall
@@ -43,30 +43,39 @@ library
                        Anemone.Foreign.Memcmp.Base
                        Anemone.Foreign.Memcmp.Export
                        Anemone.Foreign.Atoi
+                       Anemone.Foreign.Pack
 
-  include-dirs:     cbits
+  include-dirs:
+                       cbits
 
-  install-includes: anemone_base.h
-                    anemone_ffi.h
-                    anemone_atoi.h
-                    anemone_atoi_sse.h
-                    anemone_memcmp.h
-                    anemone_sse.h
-                    anemone_twiddle.h
+  install-includes:
+                       anemone_atoi.h
+                       anemone_atoi_sse.h
+                       anemone_base.h
+                       anemone_ffi.h
+                       anemone_memcmp.h
+                       anemone_pack.h
+                       anemone_sse.h
+                       anemone_twiddle.h
 
-  includes:         anemone_base.h
-                    anemone_ffi.h
-                    anemone_atoi.h
-                    anemone_atoi_sse.h
-                    anemone_memcmp.h
-                    anemone_sse.h
-                    anemone_twiddle.h
+  includes:
+                       anemone_atoi.h
+                       anemone_atoi_sse.h
+                       anemone_base.h
+                       anemone_ffi.h
+                       anemone_memcmp.h
+                       anemone_pack.h
+                       anemone_sse.h
+                       anemone_twiddle.h
 
-  c-sources:        cbits/anemone_ffi.c
-                    cbits/anemone_memcmp.c
-                    cbits/anemone_atoi.c
+  c-sources:
+                       cbits/anemone_atoi.c
+                       cbits/anemone_ffi.c
+                       cbits/anemone_memcmp.c
+                       cbits/anemone_pack.c
 
-  cc-options:       -std=c99 -O3 -msse4.2
+  cc-options:
+                       -std=c99 -O3 -msse4.2
 
 
 test-suite test
@@ -85,9 +94,10 @@ test-suite test
                      , ambiata-disorder-core
                      , ambiata-disorder-corpus
                      , ambiata-p
+                     , bytestring                      == 0.10.*
                      , QuickCheck                      == 2.7.*
                      , quickcheck-instances            == 0.3.*
-                     , bytestring                      == 0.10.*
+                     , vector                          >= 0.10       && < 0.12
 
 
 benchmark bench
