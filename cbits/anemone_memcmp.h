@@ -1,3 +1,6 @@
+#ifndef __ANEMONE_MEMCMP_H
+#define __ANEMONE_MEMCMP_H
+
 #include "anemone_base.h"
 #include "anemone_sse.h"
 #include "anemone_twiddle.h"
@@ -7,9 +10,6 @@
  * These functions assume that the buffers are padded so that reading 8 or 16 bytes past them will not segfault.
  * The value of the padding is ignored and does not affect the comparison but it is still read.
  */
-
-#ifndef __ANEMONE_MEMCMP_H
-#define __ANEMONE_MEMCMP_H
 
 /* Memory comparison functions:
  * Compare two buffers of equal length.

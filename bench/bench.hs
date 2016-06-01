@@ -6,6 +6,7 @@
 import qualified Anemone.Foreign.FFI as FoFFI
 import qualified Bench.Foreign.Memcmp as FoMemcmp
 import qualified Bench.Foreign.Atoi as FoAtoi
+import qualified Bench.Foreign.Strtod as FoStrtod
 
 import           Criterion.Main
 import           Criterion.Types (Config(..))
@@ -23,6 +24,7 @@ main
  [ bench_ffi
  , bench_memcmp
  , bench_atoi
+ , bench_strtod
  ]
 
 benchConfig :: Config
@@ -86,7 +88,7 @@ bench_atoi
  = bgroup "String to Int64"
  [ go_all "v-1"                 FoAtoi.string_to_i64_bench
  , go_all "v-128"               FoAtoi.string_to_i64_v128_bench
- , go_all "stdlib"               FoAtoi.string_to_i64_std_bench
+ , go_all "stdlib"              FoAtoi.string_to_i64_std_bench
  ]
 
  where
@@ -94,5 +96,23 @@ bench_atoi
    = bgroup nm
    $ fmap (\str -> bench (show str) $ nf f str)
    [ "0", "1", "-123", "123456", "-12345678", "1234567890", "-123456789012345", "1234567890123456789", "12345678901234567890"
+   ]
+
+
+bench_strtod :: Benchmark
+bench_strtod
+ = bgroup "String to Double"
+ [ go_all "v-128"               FoStrtod.strtod_bench
+ , go_all "stdlib"              FoStrtod.strtod_std_bench
+ , go_all "Text.Read"           FoStrtod.strtod_hs_read_double_bench
+ ]
+
+ where
+  go_all nm f
+   = bgroup nm
+   $ fmap (\str -> bench (show str) $ nf f str)
+   [ "0", "1", "-123", "123456", "-12345678", "1234567890", "-123456789012345"
+   , "0.0" , "0.12345678" , "0.1234567890123456"
+   , "123.123", "1234567.1234567", "1234567890.1234567890"
    ]
 

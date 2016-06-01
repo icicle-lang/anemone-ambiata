@@ -43,11 +43,28 @@ testAtoi check a
   readDigits _ []
    = Nothing
 
+testAtoiWf:: Atoi.AtoiT
+          -> Property
+testAtoiWf check
+ = forAll nums
+  (testAtoi check . BC.pack)
+ where
+  nums
+   = do i <- elements [0..20]
+        vectorOf i (elements ['0'..'9'])
+
 prop_atoi_scalar
  = testAtoi Atoi.atoi_scalar
 
+prop_atoi_scalar_wellformed
+ = testAtoiWf Atoi.atoi_scalar
+
+
 prop_atoi_vector128
  = testAtoi Atoi.atoi_vector128
+
+prop_atoi_vector128_wellformed
+ = testAtoiWf Atoi.atoi_vector128
 
 
 return []
