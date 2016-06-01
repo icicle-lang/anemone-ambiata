@@ -59,18 +59,21 @@ testStrtodWellformed :: Strtod.StrtodT
 testStrtodWellformed check a
  = let r  = Read.readMaybe a -- maybeOfEither (TextR.rational a)
        bs = BC.pack a
-   in  (r === check bs)
+       -- TODO: this shouldn't be approximate eq if we generate valid doubles instead of strings
+   in  (r ~~~ check bs)
 
 prop_strtod_wellformed
  = forAll genWellformed
  $ testStrtodWellformed Strtod.strtod
 
+-- TODO: this is not generating everything it should be.
+-- We should have a different test that generates a random double and prints then parses.
 genWellformed :: Gen [Char]
 genWellformed
  = oneof [int, float]
  where
   num i
-   = do i' <- elements [0..i]
+   = do i' <- elements [1..i]
         vectorOf i' (elements ['0'..'9'])
 
   int
