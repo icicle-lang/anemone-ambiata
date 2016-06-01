@@ -3,80 +3,55 @@
 Anemone: ugly sea creatures
 =======
 
-We have a bunch of C functions, as well as Haskell functions for generating C code, that would benefit from being shared across projects, being benchmarked, and being tested with quickcheck.
-The plan is for this to be a cabal library that packages up the C functions nicely, allowing you to link them in to an existing Haskell project easier.
+We have a bunch of C functions, as well as Haskell functions for generating C code, that would benefit from being shared across projects, being benchmarked, and being tested with Quickcheck.
+This is a very simple library that packages up the C functions, allowing you to link them in to an existing Haskell project easier.
 
 ## Linking and header files
-If we just add the C source files to "c-sources" in the cabal file, I believe they should be compiled and linked in to the library binary.
-Then, when using from Icicle or another project, we should be able to just include the local path to the header.
+All the header files are marked as `install-includes`, which makes them available from the C code in other Cabal projects.
+The library will also be linked in automatically by Cabal
+When using from another project's cbits, one can `#include` the files and use the functions as normal.
 
+For example, to use the SSE int parser:
 ```
-#include "lib/anemone/cbits/anemone.h"
+#include "anemone_atoi_sse.h"
 
-int i = anemone_string_to_int(...);
+int64_t i = anemone_string_to_i64_v128(...);
 ```
 
-For Jetski, we might also want a definition
+If you are generating C code and compiling it online, as in Icicle/Jetski, you will want access to the text of the header files.
+This gives you all the header files concatenated with `#line` for setting line numbers.
 ```
 getHeaderFile :: ByteString
 ```
-which we can prepend to the jetski code.
-Then, when we load the Jetski generated dylib, the Haskell program will have already loaded the Anemone functions, so any Anemone references in the dylib should work.
+
+Then, when you load the Jetski generated dylib, the Haskell program will have already loaded the Anemone functions, so any Anemone references in the dylib should work.
 
 
-## Haskell-side wrappers
-We probably want some simple Haskell-side wrappers for all or most of the functions, just so we can call out to them to test.
-Or is this easier if we just use Jetski? I suspect it's about the same.
+## Haskell wrappers
+There are wrapper functions under `Anemone.Foreign`.
+
+If you use these, you will have to pay for foreign function interface costs.
+All of the functions are marked unsafe, which brought the cost down to 1.9ns (four cycles?) on my machine.
+This is not going to be an issue for a lot of cases, but if you are calling many of these in a tight loop it *might* be worth writing the loop in C.
+
+Note that `safe` foreign function calls are significantly more expensive; around 172ns or 300 cycles, which could be a serious burden depending on your context.
+There are no safe calls here yet, but just beware.
+
 
 
 ## Quickcheck
-We seem to have a pretty good idea of how to test the C functions: for the most part it's not very different.
+Quickcheck works very well for testing C functions.
+We want to write the FFI functions anyway, so this gives us an easy win.
 
 ### Segfaults
+The only problem is, if the C code happens to segfault, it kills the whole Quickcheck so you don't know what case caused the error.
+
 I wonder whether there is any way to recover from segfaults in a test.
 The ideal, I think, would be to fork off a new process to execute the test.
 Perhaps we could even afford to fork a new process per iteration, that way we wouldn't need any communication between the two.
-We aren't sure how GHC runtime would deal with us forking, but perhaps jetski would be useful to generate a new function that forks, calls the function and synchronises etc.
-That way our forked process would not need to return to GHC.
-But this makes returning a value from the forked process hard.
 
-Actually - can we just set up interrupt handlers to handle segfault?
-
-OR I have a totally crazy idea:
-```
-fork_try(funptr) {
-    int pid = fork();
-    if (pid == 0) {
-        /* child */
-
-        /* try to execute value */
-        ret_t ret = funptr(args...);
-
-        /* it succeeded, so kill parent */
-        kill(getppid(), 9);
-
-        /* return because we are the new "real deal" */
-        return ret;
-
-    } else {
-        /* parent */
-
-        /* wait for child to die */
-        /* if child dies before parent, child must have segfaulted */
-        wait(pid);
-
-        return CHILD_DID_SEGFAULT;
-    }
-}
-```
-
+A much simpler option, as used in Icicle, is to just set up interrupt handlers to handle segfault.
 
 ## Benchmarking
-Criterion should be similar to using Quickcheck
-
-
-## Generating C code
-I'm tempted to add a very simple AST for C, with a pretty printer to Doc.
-I think the StringWord stuff should go in here.
-
+Criterion is used for benchmarks, but it tends to be easier to write the tight benchmarking loop in C.
 
