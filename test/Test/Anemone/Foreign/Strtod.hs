@@ -70,11 +70,16 @@ prop_strtod_double
  = testStrtodWellformed Strtod.strtodPadded
  . show
 
--- Note: this only generates a subset of all floats.
--- TODO:
--- There are still a few bugs to be worked out with many digits.
--- For example, this is very wrong:
--- > strtod "5100195275793762917.2721165572473" = 0.0
+-- strtod cannot parse all things that read can.
+-- If the integral or fractional part requires more precision than
+-- can be stored in a uint64 (and therefore more than an exact double),
+-- it results in a parse error.
+--
+-- > λ read "12345678901234567890" :: Double
+-- > 1.2345678901234567e19
+-- > λ strtodPadded  "12345678901234567890"
+-- > Nothing
+--
 genWellformed :: Gen [Char]
 genWellformed
  = oneof [int, float]
@@ -84,13 +89,13 @@ genWellformed
         vectorOf i' (elements ['0'..'9'])
 
   int
-   = do i <- num 15
+   = do i <- num 19
         e <- expo
         return (i <> e)
 
   float
-   = do i <- num 10
-        f <- num 10
+   = do i <- num 19
+        f <- num 19
         e <- expo
         return (i <> "." <> f <> e)
   expo

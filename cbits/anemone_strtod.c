@@ -52,7 +52,7 @@ static double INLINE anemone_strtod_unsafe_dpow10(int n)
 static int64_t INLINE anemone_strtod_unsafe_ipow10(int n)
 {
     static const int64_t e[] = {
-        0LL,
+        1LL,
         10LL,
         100LL,
         1000LL,
