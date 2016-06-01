@@ -20,8 +20,8 @@ MKBENCH(anemone_strtod)
 /* do not inline this so the C compiler cannot do any fancy tricks */
 int64_t __attribute__((noinline)) anemone_std_strtod(char **pp, char *pe, double *output_ptr)
 {
-    char* end = pe;
-    double out = strtod(*pp, &end);
+    // strtod input needs to be null terminated!
+    double out = strtod(*pp, 0);
     *output_ptr = out;
     return out;
 }

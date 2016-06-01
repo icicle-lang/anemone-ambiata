@@ -1,6 +1,7 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 module Bench.Foreign.Strtod (
     strtod_bench
@@ -74,7 +75,9 @@ type StrtodBenchT_Raw = CString -> Int -> Int
 wrapBench :: StrtodBenchT_Raw -> StrtodBenchT
 wrapBench f a
  = unsafePerformIO
- $ B.unsafeUseAsCString a
+ -- Make sure this is null terminated!
+ -- Only strtod needs null termination
+ $ B.unsafeUseAsCString (a <> "\0")
  $ \a'
  -> return $ f a' (B.length a)
 
