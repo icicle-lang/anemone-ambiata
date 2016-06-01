@@ -1,8 +1,10 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE OverloadedStrings #-}
 module Anemone.Foreign.Strtod (
     StrtodT
-  , strtod
+  , strtodUnsafe
+  , strtodPadded
   ) where
 
 import Foreign.C.String
@@ -18,9 +20,14 @@ import qualified Data.ByteString.Unsafe as B
 
 import P
 
-strtod :: StrtodT
-strtod
- = wrapStrtod anemone_strtod
+strtodUnsafe :: StrtodT
+strtodUnsafe bs
+ = wrapStrtod anemone_strtod bs (B.length bs)
+
+strtodPadded :: StrtodT
+strtodPadded bs
+ = wrapStrtod anemone_strtod (bs <> "ABCDABCDABCDABCD") (B.length bs)
+
 
 
 type StrtodT = B.ByteString -> Maybe Double
@@ -31,8 +38,8 @@ type StrtodT_Raw
     -> Ptr Double
     -> IO Bool
 
-wrapStrtod :: StrtodT_Raw -> StrtodT
-wrapStrtod f a
+wrapStrtod :: StrtodT_Raw -> B.ByteString -> Int -> Maybe Double
+wrapStrtod f a len
  =  unsafePerformIO
  $  B.unsafeUseAsCString a
  $ \a'
@@ -40,7 +47,7 @@ wrapStrtod f a
  $ \a''
  -> alloca
  $ \ip
- -> do  let end = plusPtr a' (B.length a)
+ -> do  let end = plusPtr a' len
         poke a'' a'
         suc   <- f a'' end ip
         res   <- peek ip

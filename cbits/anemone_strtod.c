@@ -140,17 +140,15 @@ bool anemone_strtod (char **pp, char *pe, double *output_ptr)
 
     char *ps_int_part = p;
     uint64_t int_part;
-    //printf("reading int part\n");
     bool error = anemone_string_to_ui64_v128 (&p, pe, &int_part);
     if (error) return error;
-    //printf("done reading int part %llu\n", int_part);
 
     int int_part_digits = p - ps_int_part;
 
     int64_t exponent    = 0;
-    int64_t significand = (int64_t)int_part;
+    /* the significand must be unsigned to store largest 19-digit */
+    uint64_t significand = int_part;
 
-    //printf("sign, significand, exponent: %lld %lld %lld\n", sign, significand, exponent);
     /* fractional part */
     if (pe - p > 0 && p[0] == '.') {
         p++;
@@ -169,12 +167,10 @@ bool anemone_strtod (char **pp, char *pe, double *output_ptr)
           frac_part /= anemone_strtod_unsafe_ipow10(num_over);
         }
 
-        //printf("frac_part %llu, digits %d\n", frac_part, digits);
         significand = significand * anemone_strtod_unsafe_ipow10 (digits) + frac_part;
         exponent   -= digits;
     }
 
-    //printf("sign, significand, exponent: %lld %lld %lld\n", sign, significand, exponent);
     /* exponent part */
     if (pe - p > 1 && (p[0] == 'e' || p[0] == 'E')) {
         p++;
@@ -194,21 +190,20 @@ bool anemone_strtod (char **pp, char *pe, double *output_ptr)
             bool error = anemone_string_to_ui64_v128 (&p, pe, &exp_part);
             if (error) return error;
 
-            //printf("adding to exponent: %llu\n", exp_part);
             exponent += (int64_t)exp_part;
         }
     }
 
-    //printf("sign, significand, exponent: %lld %lld %lld\n", sign, significand, exponent);
     if (significand == 0) {
         *output_ptr = sign * 0;
     } else if (exponent > 308) {
         *output_ptr = sign * INFINITY;
     } else {
-        *output_ptr = anemone_strtod_from_parts (sign * significand, exponent);
+        /* convert significand to double before potentially negating it */
+        double sig_double = significand;
+        *output_ptr = anemone_strtod_from_parts (sign * sig_double, exponent);
     }
 
-    //printf("value: %f\n", *output_ptr);
     *pp         = p;
 
     return 0;

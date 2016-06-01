@@ -51,23 +51,30 @@ testStrtodOnInts check a
 
 
 prop_strtod_on_ints
- = testStrtodOnInts Strtod.strtod
+ = testStrtodOnInts Strtod.strtodPadded
 
 
 testStrtodWellformed :: Strtod.StrtodT
           -> [Char] -> Property
 testStrtodWellformed check a
- = let r  = Read.readMaybe a -- maybeOfEither (TextR.rational a)
+ = let r  = Read.readMaybe a
        bs = BC.pack a
-       -- TODO: this shouldn't be approximate eq if we generate valid doubles instead of strings
    in  (r ~~~ check bs)
 
 prop_strtod_wellformed
  = forAll genWellformed
- $ testStrtodWellformed Strtod.strtod
+ $ testStrtodWellformed Strtod.strtodPadded
 
--- TODO: this is not generating everything it should be.
--- We should have a different test that generates a random double and prints then parses.
+prop_strtod_double :: Double -> Property
+prop_strtod_double
+ = testStrtodWellformed Strtod.strtodPadded
+ . show
+
+-- Note: this only generates a subset of all floats.
+-- TODO:
+-- There are still a few bugs to be worked out with many digits.
+-- For example, this is very wrong:
+-- > strtod "5100195275793762917.2721165572473" = 0.0
 genWellformed :: Gen [Char]
 genWellformed
  = oneof [int, float]
@@ -77,13 +84,13 @@ genWellformed
         vectorOf i' (elements ['0'..'9'])
 
   int
-   = do i <- num 18
+   = do i <- num 15
         e <- expo
         return (i <> e)
 
   float
-   = do i <- num 5
-        f <- num 5
+   = do i <- num 10
+        f <- num 10
         e <- expo
         return (i <> "." <> f <> e)
   expo
