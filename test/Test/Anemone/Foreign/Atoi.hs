@@ -50,7 +50,7 @@ testAtoiWf check
   (testAtoi check . BC.pack)
  where
   nums
-   = do i <- elements [0..20]
+   = do i <- elements [0..19]
         vectorOf i (elements ['0'..'9'])
 
 prop_atoi_scalar
