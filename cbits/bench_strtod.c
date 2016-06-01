@@ -1,4 +1,5 @@
 #include "anemone_strtod.h"
+#include <stdlib.h>
 
 #define NUM_BENCHES 1000000
 #define MKBENCH(f) \
@@ -19,7 +20,7 @@ MKBENCH(anemone_strtod)
 /* do not inline this so the C compiler cannot do any fancy tricks */
 int64_t __attribute__((noinline)) anemone_std_strtod(char **pp, char *pe, double *output_ptr)
 {
-    double out = atoi(*pp);
+    double out = strtod(*pp);
     *output_ptr = out;
     return out;
 }

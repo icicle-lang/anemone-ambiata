@@ -1,5 +1,6 @@
 #include "anemone_atoi.h"
 #include "anemone_atoi_sse.h"
+#include <stdlib.h>
 
 #define NUM_BENCHES 1000000
 #define MKBENCH(f) \
