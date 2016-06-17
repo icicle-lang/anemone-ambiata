@@ -44,6 +44,7 @@ library
                        Anemone.Foreign.Memcmp.Export
                        Anemone.Foreign.Atoi
                        Anemone.Foreign.Pack
+                       Anemone.Foreign.Strtod
 
   include-dirs:
                        cbits
@@ -56,6 +57,7 @@ library
                        anemone_memcmp.h
                        anemone_pack.h
                        anemone_sse.h
+                       anemone_strtod.h
                        anemone_twiddle.h
 
   includes:
@@ -66,13 +68,16 @@ library
                        anemone_memcmp.h
                        anemone_pack.h
                        anemone_sse.h
+                       anemone_strtod.h
                        anemone_twiddle.h
 
   c-sources:
                        cbits/anemone_atoi.c
+                       cbits/anemone_atoi_sse.c
                        cbits/anemone_ffi.c
                        cbits/anemone_memcmp.c
                        cbits/anemone_pack.c
+                       cbits/anemone_strtod.c
 
   cc-options:
                        -std=c99 -O3 -msse4.2
@@ -95,6 +100,7 @@ test-suite test
                      , ambiata-disorder-corpus
                      , ambiata-p
                      , bytestring                      == 0.10.*
+                     , text                            == 1.2.*
                      , QuickCheck                      == 2.7.*
                      , quickcheck-instances            == 0.3.*
                      , vector                          >= 0.10       && < 0.12
@@ -116,8 +122,10 @@ benchmark bench
                      , ambiata-p
                      , criterion                       == 1.1.*
                      , bytestring                      == 0.10.*
+                     , text                            == 1.2.*
 
   c-sources:        cbits/bench_memcmp.c
                     cbits/bench_atoi.c
+                    cbits/bench_strtod.c
   cc-options:       -std=c99 -O3 -msse4.2
 

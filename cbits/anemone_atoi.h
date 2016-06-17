@@ -1,3 +1,6 @@
+#ifndef __ANEMONE_ATOI_H
+#define __ANEMONE_ATOI_H
+
 #include "anemone_base.h"
 
 
@@ -69,3 +72,4 @@ anemone_string_to_i64 (char **pp, char *pe, int64_t *output_ptr)
     }
 }
 
+#endif//__ANEMONE_ATOI_H
