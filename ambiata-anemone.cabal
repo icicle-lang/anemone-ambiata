@@ -23,9 +23,9 @@ library
                      , ambiata-p
                      , bytestring                      == 0.10.*
                      , file-embed                      == 0.0.9
-                     , filepath                        == 1.3.*
+                     , filepath                        >= 1.3        && < 1.5
                      , text                            == 1.2.*
-                     , transformers                    >= 0.3        && < 0.5
+                     , transformers                    >= 0.3        && < 0.6
                      , vector                          >= 0.10       && < 0.12
 
   ghc-options:
@@ -44,6 +44,8 @@ library
                        Anemone.Foreign.Memcmp.Export
                        Anemone.Foreign.Atoi
                        Anemone.Foreign.Pack
+
+  other-modules:
                        Anemone.Foreign.Strtod
 
   include-dirs:
@@ -101,7 +103,7 @@ test-suite test
                      , ambiata-p
                      , bytestring                      == 0.10.*
                      , text                            == 1.2.*
-                     , QuickCheck                      == 2.7.*
+                     , QuickCheck                      >= 2.8.2      && < 2.9
                      , quickcheck-instances            == 0.3.*
                      , vector                          >= 0.10       && < 0.12
 
