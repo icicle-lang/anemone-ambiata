@@ -44,6 +44,8 @@ library
                        Anemone.Foreign.Memcmp.Export
                        Anemone.Foreign.Atoi
                        Anemone.Foreign.Pack
+
+  other-modules:
                        Anemone.Foreign.Strtod
 
   include-dirs:
