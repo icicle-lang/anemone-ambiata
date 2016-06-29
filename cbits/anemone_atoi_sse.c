@@ -66,7 +66,7 @@ anemone_string_to_ui64_v128(char** pp, char* pe, uint64_t* out_val)
         return 1;
     }
 
-    __m128i m                = anemone_sse_load128(in);
+    __m128i m                = anemone_sse_load_bytes128(in, pe);
 
     unsigned int index       = anemone_sse_first_nondigit(m);
     const __m128i zeros      = _mm_set1_epi8(48);
@@ -89,7 +89,7 @@ anemone_string_to_ui64_v128(char** pp, char* pe, uint64_t* out_val)
 
         if (UNLIKELY(index == 16)) {
             in              += 16;
-            m                = anemone_sse_load128(in);
+            m                = anemone_sse_load_bytes128(in, pe);
             index            = anemone_sse_first_nondigit(m);
             if (index > buffer_size) {
                 index = buffer_size;
@@ -126,7 +126,6 @@ anemone_string_to_i64_v128(char** pp, char* pe, int64_t* out_val)
         return 1;
     }
 
-    __m128i m                = anemone_sse_load128(in);
     int64_t sign             = 1;
 
     if (in[0] == '-') {

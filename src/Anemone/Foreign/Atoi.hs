@@ -2,6 +2,7 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 module Anemone.Foreign.Atoi (
     AtoiT
+  , atoi
   , atoi_scalar
   , atoi_vector128
   ) where
@@ -19,13 +20,18 @@ import qualified Data.ByteString.Unsafe as B
 
 import P
 
+atoi :: B.ByteString -> Maybe (Int64, B.ByteString)
+atoi bs
+ = wrapAtoi anemone_string_to_i64_v128 bs (B.length bs)
+
+
 atoi_scalar :: AtoiT
-atoi_scalar
- = wrapAtoi anemone_string_to_i64
+atoi_scalar bs
+ = fmap fst
+ $ wrapAtoi anemone_string_to_i64 bs (B.length bs)
 
 atoi_vector128 :: AtoiT
-atoi_vector128
- = wrapAtoi anemone_string_to_i64_v128
+atoi_vector128 = fmap fst . atoi
 
 
 type AtoiT = B.ByteString -> Maybe Int64
@@ -36,8 +42,8 @@ type AtoiT_Raw
     -> Ptr Int64
     -> IO Bool
 
-wrapAtoi :: AtoiT_Raw -> AtoiT
-wrapAtoi f a
+wrapAtoi :: AtoiT_Raw -> B.ByteString -> Int -> Maybe (Int64, B.ByteString)
+wrapAtoi f a len
  =  unsafePerformIO
  $  B.unsafeUseAsCString a
  $ \a'
@@ -45,13 +51,16 @@ wrapAtoi f a
  $ \a''
  -> alloca
  $ \ip
- -> do  let end = plusPtr a' (B.length a)
+ -> do  let end = plusPtr a' len
         poke a'' a'
         suc   <- f a'' end ip
         res   <- peek ip
+        end'  <- peek a''
+        let diff = minusPtr end' a'
+        let bs'  = B.drop diff a
         return
              ( if   not suc
-               then Just res
+               then Just (res, bs')
                else Nothing )
 
 
