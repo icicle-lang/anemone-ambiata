@@ -7,6 +7,7 @@
 module Test.Anemone.Foreign.Strtod where
 
 import qualified  Anemone.Foreign.Strtod as Strtod
+import qualified  Anemone.Foreign.Segv   as Segv
 
 import            P
 import            Disorder.Core
@@ -21,6 +22,9 @@ import Data.Char (isDigit)
 import qualified Text.Read          as Read
 
 
+checkStrtod :: Strtod.StrtodT
+checkStrtod
+ = Segv.withSegv Strtod.strtodPadded
 
 testStrtodOnInts  :: Strtod.StrtodT
           -> B.ByteString -> Property
@@ -51,7 +55,7 @@ testStrtodOnInts check a
 
 
 prop_strtod_on_ints
- = testStrtodOnInts Strtod.strtodPadded
+ = testStrtodOnInts checkStrtod
 
 
 testStrtodWellformed :: Strtod.StrtodT
@@ -59,15 +63,15 @@ testStrtodWellformed :: Strtod.StrtodT
 testStrtodWellformed check a
  = let r  = Read.readMaybe a
        bs = BC.pack a
-   in  (r ~~~ check bs)
+   in (r ~~~ check bs)
 
 prop_strtod_wellformed
  = forAll genWellformed
- $ testStrtodWellformed Strtod.strtodPadded
+ $ testStrtodWellformed checkStrtod
 
 prop_strtod_double :: Double -> Property
 prop_strtod_double
- = testStrtodWellformed Strtod.strtodPadded
+ = testStrtodWellformed checkStrtod
  . show
 
 -- strtod cannot parse all things that read can.
@@ -100,7 +104,6 @@ genWellformed
         return (i <> "." <> f <> e)
   expo
    = oneof [(("e" <>) <$> num 3), return ""]
-
 
 return []
 tests = $disorderCheckEnvAll TestRunMore

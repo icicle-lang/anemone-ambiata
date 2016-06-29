@@ -80,6 +80,7 @@ static double INLINE anemone_strtod_from_parts_fast (double significand, int exp
     if (exponent < -308)
         return 0.0;
     else if (exponent >= 0)
+        /* these unsafe calls are safe because abs exponent must be < 308, checked earlier */
         return significand * anemone_strtod_unsafe_dpow10 (exponent);
     else
         return significand / anemone_strtod_unsafe_dpow10 (-exponent);
@@ -164,9 +165,15 @@ bool anemone_strtod (char **pp, char *pe, double *output_ptr)
         if (int_part_digits + digits > 19) {
           int num_over = (int_part_digits + digits) - 19;
           digits -= num_over;
-          frac_part /= anemone_strtod_unsafe_ipow10(num_over);
+          if (num_over < 19) {
+            /* only call ipow with small numbers, otherwise unsafe  */
+            frac_part /= anemone_strtod_unsafe_ipow10(num_over);
+          } else {
+            frac_part = 0;
+          }
         }
 
+        /* digts is assured to be < 19, since anemone_string_to_ui64 fails on larger numbers */
         significand = significand * anemone_strtod_unsafe_ipow10 (digits) + frac_part;
         exponent   -= digits;
     }
