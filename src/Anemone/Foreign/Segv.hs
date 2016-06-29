@@ -15,15 +15,16 @@ import System.IO.Unsafe
 import qualified Data.ByteString.Char8 as B
 import qualified Data.ByteString.Unsafe as B
 
+import Control.Exception
+
 import P
 
 withSegv :: Show a => (a -> b) -> a -> b
 withSegv f a
  = unsafePerformIO
- $ do segvInstall (B.pack $ show a)
-      let !b = f a
-      segvRemove
-      return b
+ $ bracket_ (segvInstall $ B.pack $ show a) segvRemove
+            (let !b = f a
+             in  return b)
 
 segvInstall :: B.ByteString -> IO ()
 segvInstall a
