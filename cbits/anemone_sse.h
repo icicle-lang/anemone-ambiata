@@ -59,7 +59,6 @@ __m128i INLINE anemone_sse_load_bytes128(const char* start, const char* end)
 
     return _mm_setr_epi8
         (b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, 0);
-        // (0, b14, b13, b12, b11, b10, b9, b8, b7, b6, b5, b4, b3, b2, b1, b0);
   }
 }
 
