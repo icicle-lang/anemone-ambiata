@@ -11,6 +11,7 @@ import qualified  Anemone.Foreign.Segv   as Segv
 
 import            P
 import            Disorder.Core
+import            Disorder.Core.IO
 import            Test.QuickCheck
 import            Test.QuickCheck.Instances()
 
@@ -22,9 +23,8 @@ import Data.Char (isDigit)
 import qualified Text.Read          as Read
 
 
-checkStrtod :: Strtod.StrtodT
-checkStrtod
- = Segv.withSegv Strtod.strtodPadded
+strtod :: Strtod.StrtodT
+strtod = Strtod.strtodPadded
 
 testStrtodOnInts  :: Strtod.StrtodT
           -> B.ByteString -> Property
@@ -53,9 +53,12 @@ testStrtodOnInts check a
   readDigits _ []
    = Nothing
 
+withSegv' f a
+ = testIO $ Segv.withSegv (return . f) a
 
 prop_strtod_on_ints
- = testStrtodOnInts checkStrtod
+ = withSegv' 
+ $ testStrtodOnInts strtod
 
 
 testStrtodWellformed :: Strtod.StrtodT
@@ -67,12 +70,12 @@ testStrtodWellformed check a
 
 prop_strtod_wellformed
  = forAll genWellformed
- $ testStrtodWellformed checkStrtod
+ $ withSegv' 
+ $ testStrtodWellformed strtod
 
 prop_strtod_double :: Double -> Property
 prop_strtod_double
- = testStrtodWellformed checkStrtod
- . show
+ = withSegv' (testStrtodWellformed strtod . show)
 
 -- strtod cannot parse all things that read can.
 -- If the integral or fractional part requires more precision than

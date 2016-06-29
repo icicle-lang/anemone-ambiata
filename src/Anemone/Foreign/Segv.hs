@@ -10,7 +10,6 @@ module Anemone.Foreign.Segv (
 import Foreign.C.String
 
 import System.IO
-import System.IO.Unsafe
 
 import qualified Data.ByteString.Char8 as B
 import qualified Data.ByteString.Unsafe as B
@@ -19,12 +18,10 @@ import Control.Exception
 
 import P
 
-withSegv :: Show a => (a -> b) -> a -> b
+withSegv :: (Show a) => (a -> IO b) -> a -> IO b
 withSegv f a
- = unsafePerformIO
- $ bracket_ (segvInstall $ B.pack $ show a) segvRemove
-            (let !b = f a
-             in  return b)
+ = bracket_ (segvInstall (B.pack $ show a)) segvRemove
+            (f a)
 
 segvInstall :: B.ByteString -> IO ()
 segvInstall a
