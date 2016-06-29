@@ -44,8 +44,7 @@ library
                        Anemone.Foreign.Memcmp.Export
                        Anemone.Foreign.Atoi
                        Anemone.Foreign.Pack
-
-  other-modules:
+                       Anemone.Foreign.Segv
                        Anemone.Foreign.Strtod
 
   include-dirs:
@@ -79,6 +78,7 @@ library
                        cbits/anemone_ffi.c
                        cbits/anemone_memcmp.c
                        cbits/anemone_pack.c
+                       cbits/anemone_segv.c
                        cbits/anemone_strtod.c
 
   cc-options:
