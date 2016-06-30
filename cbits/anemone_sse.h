@@ -5,6 +5,8 @@
 #error "You must compile with SSE enabled!"
 #endif
 
+#include "anemone_base.h"
+
 #include <x86intrin.h>
 #include <smmintrin.h>
 
