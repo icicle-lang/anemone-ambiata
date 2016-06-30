@@ -6,6 +6,7 @@
 #endif
 
 #include "anemone_base.h"
+#include "anemone_twiddle.h"
 
 #include <x86intrin.h>
 #include <smmintrin.h>
@@ -24,43 +25,43 @@ __m128i INLINE anemone_sse_load_bytes128(const char* start, const char* end)
     return anemone_sse_load128(start);
   } else {
 
-    /* it doesn't matter what */
-    char b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14;
+    __m128i m;
     switch (end - start) {
       case 15:
-        b14 = start[14];
+        m = _mm_insert_epi8(m, start[14], 14);
       case 14:
-        b13 = start[13];
+        m = _mm_insert_epi8(m, start[13], 13);
       case 13:
-        b12 = start[12];
+        m = _mm_insert_epi8(m, start[12], 12);
       case 12:
-        b11 = start[11];
+        m = _mm_insert_epi8(m, start[11], 11);
       case 11:
-        b10 = start[10];
+        m = _mm_insert_epi8(m, start[10], 10);
       case 10:
-        b9 = start[9];
+        m = _mm_insert_epi8(m, start[9], 9);
       case 9:
-        b8 = start[8];
+        m = _mm_insert_epi8(m, start[8], 8);
       case 8:
-        b7 = start[7];
+        m = _mm_insert_epi64(m, ((uint64_t*)start)[0], 0);
+        break;
       case 7:
-        b6 = start[6];
+        m = _mm_insert_epi8(m, start[6], 6);
       case 6:
-        b5 = start[5];
+        m = _mm_insert_epi8(m, start[5], 5);
       case 5:
-        b4 = start[4];
+        m = _mm_insert_epi8(m, start[4], 4);
       case 4:
-        b3 = start[3];
+        m = _mm_insert_epi32(m, ((uint32_t*)start)[0], 0);
+        break;
       case 3:
-        b2 = start[2];
+        m = _mm_insert_epi8(m, start[2], 2);
       case 2:
-        b1 = start[1];
+        m = _mm_insert_epi8(m, start[1], 1);
       case 1:
-        b0 = start[0];
+        m = _mm_insert_epi8(m, start[0], 0);
     }
 
-    return _mm_setr_epi8
-        (b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, 0);
+    return m;
   }
 }
 
