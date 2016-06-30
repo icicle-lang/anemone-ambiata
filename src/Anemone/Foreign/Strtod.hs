@@ -3,8 +3,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Anemone.Foreign.Strtod (
     StrtodT
-  , strtodUnsafe
-  , strtodPadded
+  , strtod
   ) where
 
 import Foreign.C.String
@@ -20,17 +19,14 @@ import qualified Data.ByteString.Unsafe as B
 
 import P
 
-strtodUnsafe :: StrtodT
-strtodUnsafe bs
+strtod :: StrtodT
+strtod bs
  = wrapStrtod anemone_strtod bs (B.length bs)
 
-strtodPadded :: StrtodT
-strtodPadded bs
- = wrapStrtod anemone_strtod (bs <> "ABCDABCDABCDABCD") (B.length bs)
 
 
 
-type StrtodT = B.ByteString -> Maybe Double
+type StrtodT = B.ByteString -> Maybe (Double, B.ByteString)
 
 type StrtodT_Raw
      = Ptr CString
@@ -38,7 +34,7 @@ type StrtodT_Raw
     -> Ptr Double
     -> IO Bool
 
-wrapStrtod :: StrtodT_Raw -> B.ByteString -> Int -> Maybe Double
+wrapStrtod :: StrtodT_Raw -> B.ByteString -> Int -> Maybe (Double, B.ByteString)
 wrapStrtod f a len
  =  unsafePerformIO
  $  B.unsafeUseAsCString a
@@ -51,9 +47,12 @@ wrapStrtod f a len
         poke a'' a'
         suc   <- f a'' end ip
         res   <- peek ip
+        end'  <- peek a''
+        let diff = minusPtr end' a'
+        let bs'  = B.drop diff a
         return
              ( if   not suc
-               then Just res
+               then Just (res, bs')
                else Nothing )
 
 

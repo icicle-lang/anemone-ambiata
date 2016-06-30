@@ -5,6 +5,8 @@
 #error "You must compile with SSE enabled!"
 #endif
 
+#include "anemone_base.h"
+
 #include <x86intrin.h>
 #include <smmintrin.h>
 
@@ -12,6 +14,67 @@ __m128i INLINE anemone_sse_load128(const void* mem)
 {
     return _mm_loadu_si128((__m128i*)mem);
 }
+
+/*
+  load some bytes, but be careful not to read past "end"
+*/
+__m128i INLINE anemone_sse_load_bytes128(const char* start, const char* end)
+{
+  if (LIKELY(end - start >= 16)) {
+    return anemone_sse_load128(start);
+  } else {
+    /* there is not enough to load all 16 bytes, as it would read past the end */
+    __m128i m;
+    /* end - start < 16 */
+    switch (end - start) {
+      /* load in single-byte at a time, dropping through */
+      case 15:
+        m = _mm_insert_epi8(m, start[14], 14);
+      case 14:
+        m = _mm_insert_epi8(m, start[13], 13);
+      case 13:
+        m = _mm_insert_epi8(m, start[12], 12);
+      case 12:
+        m = _mm_insert_epi8(m, start[11], 11);
+      case 11:
+        m = _mm_insert_epi8(m, start[10], 10);
+      case 10:
+        m = _mm_insert_epi8(m, start[9], 9);
+      case 9:
+        m = _mm_insert_epi8(m, start[8], 8);
+
+      /* when there are eight left, we can load a whole 64-bit and finish */
+      case 8:
+        m = _mm_insert_epi64(m, ((uint64_t*)start)[0], 0);
+        break;
+
+      case 7:
+        m = _mm_insert_epi8(m, start[6], 6);
+      case 6:
+        m = _mm_insert_epi8(m, start[5], 5);
+      case 5:
+        m = _mm_insert_epi8(m, start[4], 4);
+
+      /* load 32-bits and finish */
+      case 4:
+        m = _mm_insert_epi32(m, ((uint32_t*)start)[0], 0);
+        break;
+
+      case 3:
+        m = _mm_insert_epi8(m, start[2], 2);
+      case 2:
+        m = _mm_insert_epi8(m, start[1], 1);
+      case 1:
+        m = _mm_insert_epi8(m, start[0], 0);
+
+      default:
+        break;
+    }
+
+    return m;
+  }
+}
+
 
 uint64_t INLINE anemone_sse_sum1_epi32(const __m128i a)
 {

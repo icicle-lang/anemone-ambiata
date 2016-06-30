@@ -23,18 +23,17 @@ import Data.Char (isDigit)
 import qualified Text.Read          as Read
 
 
-strtod :: Strtod.StrtodT
-strtod = Strtod.strtodPadded
+strtod :: B.ByteString -> Maybe Double
+strtod = fmap fst . Strtod.strtod
 
-testStrtodOnInts  :: Strtod.StrtodT
-          -> B.ByteString -> Property
-testStrtodOnInts check a
+testStrtodOnInts  :: B.ByteString -> Property
+testStrtodOnInts a
  = let mk8Dot = 46
        mk8e   = 101
        mk8E   = 69
        a' = B.filter (\c -> c /= mk8Dot && c /= mk8e && c /= mk8E) a
        r  = readMaybe' (BC.unpack a')
-   in  (r === check a')
+   in  (r === strtod a')
  where
   readMaybe' ('-':xs)
    = fmap negate $ readDigits 0 xs
@@ -58,24 +57,23 @@ withSegv' f a
 
 prop_strtod_on_ints
  = withSegv' 
- $ testStrtodOnInts strtod
+ $ testStrtodOnInts
 
 
-testStrtodWellformed :: Strtod.StrtodT
-          -> [Char] -> Property
-testStrtodWellformed check a
+testStrtodWellformed :: [Char] -> Property
+testStrtodWellformed a
  = let r  = Read.readMaybe a
        bs = BC.pack a
-   in (r ~~~ check bs)
+   in (r ~~~ strtod bs)
 
 prop_strtod_wellformed
  = forAll genWellformed
  $ withSegv' 
- $ testStrtodWellformed strtod
+ $ testStrtodWellformed
 
 prop_strtod_double :: Double -> Property
 prop_strtod_double
- = withSegv' (testStrtodWellformed strtod . show)
+ = withSegv' (testStrtodWellformed . show)
 
 -- strtod cannot parse all things that read can.
 -- If the integral or fractional part requires more precision than
