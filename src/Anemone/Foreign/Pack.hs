@@ -42,12 +42,15 @@ pack64 xs
  | otherwise
  = Just . Packed64 blocks bits . unsafePerformIO .
     withForeignPtr fp $ \pin ->
-    B.create outputSize $ \pout ->
-     c_pack64_64
-      (fromIntegral blocks)
-      (fromIntegral bits)
-      pin
-      pout
+    B.create outputSize $ \pout -> do
+     -- c_pack64_64 can fail, but only if the bits is > 64.
+     -- Since we are computing the number of bits, we know it will succeed.
+     _ <- c_pack64_64
+          (fromIntegral blocks)
+          (fromIntegral bits)
+          pin
+          pout
+     return ()
 
  where
   (fp, _)
@@ -72,16 +75,20 @@ unpack64 (Packed64 blocks bits (PS fpin off len))
  = unsafePerformIO $ do
     fpout <- mallocPlainForeignPtrBytes outputSize
 
-    withForeignPtr fpout $ \pout ->
-     withForeignPtr fpin $ \pin -> do
-      c_unpack64_64
-       (fromIntegral blocks)
-       (fromIntegral bits)
-       (pin `plusPtr` off)
-       pout
+    ok <- withForeignPtr fpout $ \pout ->
+           withForeignPtr fpin $ \pin -> do
+            c_unpack64_64
+             (fromIntegral blocks)
+             (fromIntegral bits)
+             (pin `plusPtr` off)
+             pout
 
-    return . Just $
-     Storable.unsafeFromForeignPtr0 fpout outputCount
+    case ok of
+     True ->
+      return . Just $
+       Storable.unsafeFromForeignPtr0 fpout outputCount
+     False ->
+      return Nothing
  where
    inputSize
     = (bits * blocks * 64) `div` 8
@@ -99,11 +106,11 @@ bitsof
 
 -- | void pack64_64 (uint64_t blocks, const uint64_t bits, const uint64_t *in, uint8_t *out)
 foreign import ccall unsafe "anemone_pack64_64"
-  c_pack64_64 :: Word64 -> Word64 -> Ptr Word64 -> Ptr Word8 -> IO ()
+  c_pack64_64 :: Word64 -> Word64 -> Ptr Word64 -> Ptr Word8 -> IO Bool
 
 -- | void anemone_unpack64_64 (uint64_t blocks, const uint64_t bits, const uint8_t *in, uint64_t *out)
 foreign import ccall unsafe "anemone_unpack64_64"
-  c_unpack64_64 :: Word64 -> Word64 -> Ptr Word8 -> Ptr Word64 -> IO ()
+  c_unpack64_64 :: Word64 -> Word64 -> Ptr Word8 -> Ptr Word64 -> IO Bool
 
 -- | uint64_t anemone_bitsof (uint64_t value)
 foreign import ccall unsafe "anemone_bitsof"

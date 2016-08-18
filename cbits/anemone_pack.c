@@ -17625,19 +17625,25 @@ static unpack64fn unpack64_64_table[] = {
 };
 
 /* write |count| blocks of 64 x 64-bit values from |in| at |bits| bits per value to |out|. */
-void anemone_pack64_64 (uint64_t blocks, const uint64_t bits, const uint64_t *in, uint8_t *out) {
+uint64_t anemone_pack64_64 (uint64_t blocks, const uint64_t bits, const uint64_t *in, uint8_t *out) {
+  if (bits > 64) return 0;
+
   pack64fn pack = pack64_64_table[bits];
   for (uint64_t b = 0; b < blocks; b++) {
       pack (&in, &out);
   }
+  return 1;
 }
 
 /* read |count| blocks of 64 values from |in| at |bits| bits per value, and write 64-bit values to |out|. */
-void anemone_unpack64_64 (uint64_t blocks, const uint64_t bits, const uint8_t *in, uint64_t *out) {
+uint64_t anemone_unpack64_64 (uint64_t blocks, const uint64_t bits, const uint8_t *in, uint64_t *out) {
+  if (bits > 64) return 0;
+
   unpack64fn unpack = unpack64_64_table[bits];
   for (uint64_t b = 0; b < blocks; b++) {
     unpack (&in, &out);
   }
+  return 1;
 }
 
 /* calculate number of bits required to store |value|. */
