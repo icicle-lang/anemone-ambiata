@@ -84,10 +84,10 @@ unpack64 (Packed64 blocks bits (PS fpin off len))
              pout
 
     case ok of
-     True ->
+     0 ->
       return . Just $
        Storable.unsafeFromForeignPtr0 fpout outputCount
-     False ->
+     _ ->
       return Nothing
  where
    inputSize
@@ -106,11 +106,11 @@ bitsof
 
 -- | void pack64_64 (uint64_t blocks, const uint64_t bits, const uint64_t *in, uint8_t *out)
 foreign import ccall unsafe "anemone_pack64_64"
-  c_pack64_64 :: Word64 -> Word64 -> Ptr Word64 -> Ptr Word8 -> IO Bool
+  c_pack64_64 :: Word64 -> Word64 -> Ptr Word64 -> Ptr Word8 -> IO Word64
 
 -- | void anemone_unpack64_64 (uint64_t blocks, const uint64_t bits, const uint8_t *in, uint64_t *out)
 foreign import ccall unsafe "anemone_unpack64_64"
-  c_unpack64_64 :: Word64 -> Word64 -> Ptr Word8 -> Ptr Word64 -> IO Bool
+  c_unpack64_64 :: Word64 -> Word64 -> Ptr Word8 -> Ptr Word64 -> IO Word64
 
 -- | uint64_t anemone_bitsof (uint64_t value)
 foreign import ccall unsafe "anemone_bitsof"
