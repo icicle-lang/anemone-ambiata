@@ -45,12 +45,14 @@ pack64 xs
     B.create outputSize $ \pout -> do
      -- c_pack64_64 can fail, but only if the bits is > 64.
      -- Since we are computing the number of bits, we know it will succeed.
-     _ <- c_pack64_64
+     ok <- c_pack64_64
           (fromIntegral blocks)
           (fromIntegral bits)
           pin
           pout
-     return ()
+     case ok of
+      0 -> return ()
+      _ -> fail ("Anemone.Foreign.Pack.pack64: impossible: call to c_pack64_64 failed with error code " <> show ok)
 
  where
   (fp, _)
