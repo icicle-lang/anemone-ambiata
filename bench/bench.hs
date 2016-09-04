@@ -1,9 +1,11 @@
+{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# OPTIONS_GHC -Wwarn #-}
 
 import qualified Anemone.Foreign.FFI as FoFFI
+import qualified Anemone.Foreign.Hash as FoHash
 import qualified Bench.Foreign.Memcmp as FoMemcmp
 import qualified Bench.Foreign.Atoi as FoAtoi
 import qualified Bench.Foreign.Strtod as FoStrtod
@@ -11,8 +13,11 @@ import qualified Bench.Foreign.Strtod as FoStrtod
 import           Criterion.Main
 import           Criterion.Types (Config(..))
 
+import           Data.ByteString (ByteString)
+import qualified Data.ByteString as B
+import           Data.Hashable (hash)
+
 import           System.IO (IO)
-import           Data.ByteString.Char8 ()
 
 import           P
 
@@ -25,6 +30,7 @@ main
  , bench_memcmp
  , bench_atoi
  , bench_strtod
+ , bench_hash
  ]
 
 benchConfig :: Config
@@ -64,7 +70,7 @@ bench_memcmp
      [ go_all "memeq8"                  FoMemcmp.memeq8_bench
      , go_all "memeq64"                 FoMemcmp.memeq64_bench
      , go_all "memeq128"                FoMemcmp.memeq128_bench
-     ] 
+     ]
  ]
 
  where
@@ -116,3 +122,24 @@ bench_strtod
    , "123.123", "1234567.1234567", "1234567890.1234567890"
    ]
 
+bench_hash :: Benchmark
+bench_hash
+ = bgroup "Hashing"
+ [ go_all "fasthash32"            (fromIntegral . FoHash.fasthash32)
+ , go_all "fasthash64"            (fromIntegral . FoHash.fasthash64)
+ , go_all "hashable+fnv1"         hash
+ ]
+
+ where
+  go_all nm (f :: ByteString -> Int)
+   = bgroup nm
+   $ fmap (\str -> bench (show (B.length str) <> "B") $ nf f str)
+   [ "12345678"
+   , "1234567890123456"
+   , "123456789012345678901234"
+   , "12345678901234567890123456789012"
+   , "1234567890123456789012345678901234567890"
+   , "123456789012345678901234567890123456789012345678"
+   , "12345678901234567890123456789012345678901234567890123456"
+   , "1234567890123456789012345678901234567890123456789012345678901234"
+   ]

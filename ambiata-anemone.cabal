@@ -38,11 +38,12 @@ library
                        Paths_ambiata_anemone
                        Anemone
                        Anemone.Headers
+                       Anemone.Foreign.Atoi
                        Anemone.Foreign.FFI
+                       Anemone.Foreign.Hash
                        Anemone.Foreign.Memcmp
                        Anemone.Foreign.Memcmp.Base
                        Anemone.Foreign.Memcmp.Export
-                       Anemone.Foreign.Atoi
                        Anemone.Foreign.Pack
                        Anemone.Foreign.Segv
                        Anemone.Foreign.Strtod
@@ -55,6 +56,7 @@ library
                        anemone_atoi_sse.h
                        anemone_base.h
                        anemone_ffi.h
+                       anemone_hash.h
                        anemone_memcmp.h
                        anemone_pack.h
                        anemone_sse.h
@@ -66,6 +68,7 @@ library
                        anemone_atoi_sse.h
                        anemone_base.h
                        anemone_ffi.h
+                       anemone_hash.h
                        anemone_memcmp.h
                        anemone_pack.h
                        anemone_sse.h
@@ -76,13 +79,14 @@ library
                        cbits/anemone_atoi.c
                        cbits/anemone_atoi_sse.c
                        cbits/anemone_ffi.c
+                       cbits/anemone_hash.c
                        cbits/anemone_memcmp.c
                        cbits/anemone_pack.c
                        cbits/anemone_segv.c
                        cbits/anemone_strtod.c
 
   cc-options:
-                       -std=c99 -O3 -msse4.2
+                       -std=c99 -O3 -msse4.2 -march=native
 
 
 test-suite test
@@ -122,12 +126,15 @@ benchmark bench
                        base                            >= 3          && < 5
                      , ambiata-anemone
                      , ambiata-p
-                     , criterion                       == 1.1.*
                      , bytestring                      == 0.10.*
+                     , criterion                       == 1.1.*
+                     , hashable                        == 1.2.*
                      , text                            == 1.2.*
 
-  c-sources:        cbits/bench_memcmp.c
-                    cbits/bench_atoi.c
-                    cbits/bench_strtod.c
-  cc-options:       -std=c99 -O3 -msse4.2
+  c-sources:
+                       cbits/bench_memcmp.c
+                       cbits/bench_atoi.c
+                       cbits/bench_strtod.c
 
+  cc-options:
+                       -std=c99 -O3 -msse4.2 -march=native
