@@ -3,8 +3,6 @@
 
 #include "anemone_base.h"
 
-#include <stdint.h>
-
 ANEMONE_INLINE
 uint16_t anemone_bswap16 (uint16_t x)
 {

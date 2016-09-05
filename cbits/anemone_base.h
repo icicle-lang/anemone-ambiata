@@ -2,6 +2,7 @@
 #define __ANEMONE_BASE_H
 
 #include <stdint.h>
+#include <stdlib.h>
 
 typedef int bool_t;
 typedef int error_t;
