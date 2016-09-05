@@ -35,10 +35,11 @@ library
                        src
 
   exposed-modules:
-                       Paths_ambiata_anemone
                        Anemone
                        Anemone.Headers
+
                        Anemone.Foreign.Atoi
+                       Anemone.Foreign.Data
                        Anemone.Foreign.FFI
                        Anemone.Foreign.Hash
                        Anemone.Foreign.Memcmp
@@ -86,7 +87,7 @@ library
                        cbits/anemone_strtod.c
 
   cc-options:
-                       -std=c99 -O3 -msse4.2 -march=native
+                       -std=c99 -O3 -msse4.2 -march=native -Wall -Werror
 
 
 test-suite test

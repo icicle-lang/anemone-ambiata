@@ -4,15 +4,20 @@ module Anemone.Foreign.Memcmp.Base (
     MemcmpT, MemeqT, MemcmpT_Raw
   , wrapCmp
   , wrapEq
+
   ) where
 
-import Foreign.C.String
-import System.IO.Unsafe
+import           Anemone.Foreign.Data
 
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Unsafe as B
 
-import P
+import           Foreign.C.String (CString)
+
+import           System.IO (IO)
+import           System.IO.Unsafe (unsafePerformIO)
+
+import           P
 
 type MemcmpT = B.ByteString -> B.ByteString -> Ordering
 type MemeqT  = B.ByteString -> B.ByteString -> Bool
@@ -20,8 +25,8 @@ type MemeqT  = B.ByteString -> B.ByteString -> Bool
 type MemcmpT_Raw
      = CString
     -> CString
-    -> Int
-    -> Int
+    -> CSize
+    -> IO CInt
 
 wrapCmp :: MemcmpT_Raw -> MemcmpT
 wrapCmp f a b
@@ -30,8 +35,8 @@ wrapCmp f a b
  $ \a'
  -> B.unsafeUseAsCString b
  $ \b'
- -> let cmp = f a' b' (min (B.length a) (B.length b))
-    in  return (cmp `compare` 0)
+ -> do  cmp <- f a' b' (fromIntegral $ min (B.length a) (B.length b))
+        return (cmp `compare` 0)
 
 wrapEq  :: MemcmpT_Raw -> MemeqT
 wrapEq f a b

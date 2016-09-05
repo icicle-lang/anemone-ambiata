@@ -1,4 +1,5 @@
-#include <stdint.h>
+#include "anemone_pack.h"
+
 #include <string.h>
 
 typedef void (*pack64fn)(const uint64_t **pin, uint8_t **pout);
@@ -17625,7 +17626,7 @@ static unpack64fn unpack64_64_table[] = {
 };
 
 /* write |count| blocks of 64 x 64-bit values from |in| at |bits| bits per value to |out|. */
-uint64_t anemone_pack64_64 (uint64_t blocks, const uint64_t bits, const uint64_t *in, uint8_t *out) {
+error_t anemone_pack64_64 (uint64_t blocks, const uint64_t bits, const uint64_t *in, uint8_t *out) {
   if (bits > 64) return 1;
   pack64fn pack = pack64_64_table[bits];
   for (uint64_t b = 0; b < blocks; b++) {
@@ -17635,7 +17636,7 @@ uint64_t anemone_pack64_64 (uint64_t blocks, const uint64_t bits, const uint64_t
 }
 
 /* read |count| blocks of 64 values from |in| at |bits| bits per value, and write 64-bit values to |out|. */
-uint64_t anemone_unpack64_64 (uint64_t blocks, const uint64_t bits, const uint8_t *in, uint64_t *out) {
+error_t anemone_unpack64_64 (uint64_t blocks, const uint64_t bits, const uint8_t *in, uint64_t *out) {
   if (bits > 64) return 1;
   unpack64fn unpack = unpack64_64_table[bits];
   for (uint64_t b = 0; b < blocks; b++) {

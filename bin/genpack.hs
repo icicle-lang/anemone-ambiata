@@ -177,7 +177,8 @@ main :: IO ()
 main = do
   withFile "cbits/anemone_pack.c" WriteMode $ \h -> do
     hPutStrLn h . unlines $
-      [ "#include <stdint.h>"
+      [ "#include \"anemone_pack.h\""
+      , ""
       , "#include <string.h>"
       ]
 
@@ -217,7 +218,7 @@ main = do
 
     hPutStrLn h . unlines $
       [ "/* write |count| blocks of " <> show inputCount <> " x 64-bit values from |in| at |bits| bits per value to |out|. */"
-      , "uint64_t anemone_pack64_" <> show inputCount <> " (uint64_t blocks, const uint64_t bits, const uint64_t *in, uint8_t *out) {"
+      , "error_t anemone_pack64_" <> show inputCount <> " (uint64_t blocks, const uint64_t bits, const uint64_t *in, uint8_t *out) {"
       , "  if (bits > 64) return 1;"
       , "  pack64fn pack = pack64_" <> show inputCount <> "_table[bits];"
       , "  for (uint64_t b = 0; b < blocks; b++) {"
@@ -228,7 +229,7 @@ main = do
 
     hPutStrLn h . unlines $
       [ "/* read |count| blocks of " <> show inputCount <> " values from |in| at |bits| bits per value, and write 64-bit values to |out|. */"
-      , "uint64_t anemone_unpack64_" <> show inputCount <> " (uint64_t blocks, const uint64_t bits, const uint8_t *in, uint64_t *out) {"
+      , "error_t anemone_unpack64_" <> show inputCount <> " (uint64_t blocks, const uint64_t bits, const uint8_t *in, uint64_t *out) {"
       , "  if (bits > 64) return 1;"
       , "  unpack64fn unpack = unpack64_" <> show inputCount <> "_table[bits];"
       , "  for (uint64_t b = 0; b < blocks; b++) {"
@@ -248,11 +249,11 @@ main = do
       [ "#ifndef __ANEMONE_PACK_H"
       , "#define __ANEMONE_PACK_H"
       , ""
-      , "#include <stdint.h>"
+      , "#include \"anemone_base.h\""
       , ""
-      , "uint64_t anemone_pack64_" <> show inputCount <> " (uint64_t blocks, const uint64_t bits, const uint64_t *in, uint8_t *out);"
+      , "error_t anemone_pack64_" <> show inputCount <> " (uint64_t blocks, const uint64_t bits, const uint64_t *in, uint8_t *out);"
       , ""
-      , "uint64_t anemone_unpack64_" <> show inputCount <> " (uint64_t blocks, const uint64_t bits, const uint8_t *in, uint64_t *out);"
+      , "error_t anemone_unpack64_" <> show inputCount <> " (uint64_t blocks, const uint64_t bits, const uint8_t *in, uint64_t *out);"
       , ""
       , "#endif//__ANEMONE_PACK_H"
       ]

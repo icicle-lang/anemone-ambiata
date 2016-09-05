@@ -23,6 +23,7 @@
    SOFTWARE.
 */
 
+#include "anemone_base.h"
 #include "anemone_hash.h"
 
 // Compression function for Merkle-Damgard construction.
@@ -30,7 +31,9 @@
                   (v) *= 0x2127599bf4325c37ULL; \
                   (v) ^= (v) >> 47; })
 
-static uint64_t __attribute__((always_inline)) fasthash (uint64_t seed, const uint8_t *buf, size_t len)
+ANEMONE_STATIC
+ANEMONE_INLINE
+uint64_t fasthash (uint64_t seed, const uint8_t *buf, size_t len)
 {
     const uint64_t m = 0x880355f21e6d1965ULL;
 

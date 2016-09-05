@@ -8,6 +8,8 @@ module Anemone.Foreign.Pack (
   , bitsof
   ) where
 
+import           Anemone.Foreign.Data
+
 import           Data.Bits ((.|.))
 import           Data.ByteString.Internal (ByteString(..))
 import qualified Data.ByteString.Internal as B
@@ -108,11 +110,11 @@ bitsof
 
 -- | void pack64_64 (uint64_t blocks, const uint64_t bits, const uint64_t *in, uint8_t *out)
 foreign import ccall unsafe "anemone_pack64_64"
-  c_pack64_64 :: Word64 -> Word64 -> Ptr Word64 -> Ptr Word8 -> IO Word64
+  c_pack64_64 :: Word64 -> Word64 -> Ptr Word64 -> Ptr Word8 -> IO CError
 
 -- | void anemone_unpack64_64 (uint64_t blocks, const uint64_t bits, const uint8_t *in, uint64_t *out)
 foreign import ccall unsafe "anemone_unpack64_64"
-  c_unpack64_64 :: Word64 -> Word64 -> Ptr Word8 -> Ptr Word64 -> IO Word64
+  c_unpack64_64 :: Word64 -> Word64 -> Ptr Word8 -> Ptr Word64 -> IO CError
 
 -- | uint64_t anemone_bitsof (uint64_t value)
 foreign import ccall unsafe "anemone_bitsof"

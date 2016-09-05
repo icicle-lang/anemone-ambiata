@@ -1,7 +1,5 @@
-#include "anemone_base.h"
+#include "anemone_atoi.h"
 #include "anemone_sse.h"
-#include "anemone_twiddle.h"
-#include "anemone_atoi_sse.h"
 
 
 static const uint32_t powers_of_ten_multipliers[]
@@ -33,9 +31,9 @@ static const uint32_t powers_of_ten[]
 
  where pow10[0] = 1, pow10[<0] = 0, pow10[1] = 10, ...
  */
-static
-unsigned int INLINE
-anemone_string_to_i64_v128_first_eight(const __m128i m, unsigned int index)
+ANEMONE_STATIC
+ANEMONE_INLINE
+uint64_t anemone_string_to_i64_v128_first_eight (const __m128i m, unsigned int index)
 {
     const __m128i lows       = _mm_cvtepu8_epi32(m);
     const __m128i m_shifted  = _mm_srli_si128(m, 4);
@@ -57,8 +55,7 @@ anemone_string_to_i64_v128_first_eight(const __m128i m, unsigned int index)
   parse string to unsigned 64-bit integer.
   does not strip whitespace.
  */
-bool
-anemone_string_to_ui64_v128(char** pp, char* pe, uint64_t* out_val)
+error_t anemone_string_to_ui64_v128 (char **pp, char *pe, uint64_t *out_val)
 {
     char* in = *pp;
     uint64_t buffer_size = pe - in;
@@ -78,16 +75,16 @@ anemone_string_to_ui64_v128(char** pp, char* pe, uint64_t* out_val)
     buffer_size -= index;
     uint64_t int_out         = anemone_string_to_i64_v128_first_eight(m, index);
 
-    if (UNLIKELY(index == 0)) {
+    if (ANEMONE_UNLIKELY(index == 0)) {
         return 1;
     }
-    if (UNLIKELY(index > 8)) {
+    if (ANEMONE_UNLIKELY(index > 8)) {
         m                    = _mm_srli_si128(m, 8);
         const uint64_t i2    = anemone_string_to_i64_v128_first_eight(m, index - 8);
         const uint64_t mul2  = powers_of_ten[index - 8];
         int_out              = int_out * mul2 + i2;
 
-        if (UNLIKELY(index == 16)) {
+        if (ANEMONE_UNLIKELY(index == 16)) {
             in              += 16;
             m                = anemone_sse_load_bytes128(in, pe);
             index            = anemone_sse_first_nondigit(m);
@@ -95,7 +92,7 @@ anemone_string_to_ui64_v128(char** pp, char* pe, uint64_t* out_val)
                 index = buffer_size;
             }
             buffer_size -= index;
-            if (UNLIKELY(index > 3)) {
+            if (ANEMONE_UNLIKELY(index > 3)) {
                 return 1;
             }
 
@@ -117,8 +114,7 @@ anemone_string_to_ui64_v128(char** pp, char* pe, uint64_t* out_val)
   parse string to signed 64-bit integer.
   does not strip whitespace.
  */
-bool
-anemone_string_to_i64_v128(char** pp, char* pe, int64_t* out_val)
+error_t anemone_string_to_i64_v128 (char **pp, char *pe, int64_t *out_val)
 {
     char* in = *pp;
     uint64_t buffer_size = pe - in;
@@ -140,5 +136,3 @@ anemone_string_to_i64_v128(char** pp, char* pe, int64_t* out_val)
     *out_val = int_out * sign;
     return 0;
 }
-
-
