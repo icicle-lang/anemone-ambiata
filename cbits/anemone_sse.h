@@ -8,9 +8,9 @@
 #include "anemone_base.h"
 
 #include <x86intrin.h>
-#include <smmintrin.h>
 
-__m128i INLINE anemone_sse_load128(const void* mem)
+ANEMONE_INLINE
+__m128i anemone_sse_load128 (const void *mem)
 {
     return _mm_loadu_si128((__m128i*)mem);
 }
@@ -18,13 +18,14 @@ __m128i INLINE anemone_sse_load128(const void* mem)
 /*
   load some bytes, but be careful not to read past "end"
 */
-__m128i INLINE anemone_sse_load_bytes128(const char* start, const char* end)
+ANEMONE_INLINE
+__m128i anemone_sse_load_bytes128 (const char *start, const char *end)
 {
-  if (LIKELY(end - start >= 16)) {
+  if (ANEMONE_LIKELY(end - start >= 16)) {
     return anemone_sse_load128(start);
   } else {
     /* there is not enough to load all 16 bytes, as it would read past the end */
-    __m128i m;
+    __m128i m = _mm_setzero_si128();
     /* end - start < 16 */
     switch (end - start) {
       /* load in single-byte at a time, dropping through */
@@ -75,8 +76,8 @@ __m128i INLINE anemone_sse_load_bytes128(const char* start, const char* end)
   }
 }
 
-
-uint64_t INLINE anemone_sse_sum1_epi32(const __m128i a)
+ANEMONE_INLINE
+uint64_t anemone_sse_sum1_epi32 (const __m128i a)
 {
     const __m128i sum1 = _mm_hadd_epi32(a, a);
     const __m128i sum2 = _mm_hadd_epi32(sum1, sum1);
@@ -85,7 +86,8 @@ uint64_t INLINE anemone_sse_sum1_epi32(const __m128i a)
 }
 
 /* return a[0] + a[1] + a[2] + a[3] + b[0] + b[1] + b[2] + b[3] */
-uint64_t INLINE anemone_sse_sum2_epi32(const __m128i a, const __m128i b)
+ANEMONE_INLINE
+uint64_t anemone_sse_sum2_epi32 (const __m128i a, const __m128i b)
 {
     const __m128i sum1 = _mm_hadd_epi32(a, b);
     const __m128i sum2 = _mm_hadd_epi32(sum1, sum1);
@@ -94,14 +96,12 @@ uint64_t INLINE anemone_sse_sum2_epi32(const __m128i a, const __m128i b)
     return _mm_extract_epi32(sum3, 0);
 }
 
-unsigned int INLINE anemone_sse_first_nondigit(const __m128i m)
+ANEMONE_INLINE
+unsigned int anemone_sse_first_nondigit (const __m128i m)
 {
     const __m128i digit_range = _mm_setr_epi8('0', '9', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     const int index = _mm_cmpestri(digit_range, 2, m, 16, _SIDD_UBYTE_OPS | _SIDD_CMP_RANGES | _SIDD_NEGATIVE_POLARITY);
     return index;
 }
 
-
 #endif//__ANEMONE_SSE_H
-
-

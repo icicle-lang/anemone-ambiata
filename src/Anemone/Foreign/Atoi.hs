@@ -7,18 +7,20 @@ module Anemone.Foreign.Atoi (
   , atoi_vector128
   ) where
 
-import Foreign.C.String
-import Foreign.Ptr
-import Foreign.Marshal.Alloc
-import Foreign.Storable
-
-import System.IO
-import System.IO.Unsafe
+import           Anemone.Foreign.Data
 
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Unsafe as B
 
-import P
+import           Foreign.C.String (CString)
+import           Foreign.Marshal.Alloc (alloca)
+import           Foreign.Ptr (Ptr, plusPtr, minusPtr)
+import           Foreign.Storable (peek, poke)
+
+import           System.IO (IO)
+import           System.IO.Unsafe (unsafePerformIO)
+
+import           P
 
 atoi :: B.ByteString -> Maybe (Int64, B.ByteString)
 atoi bs
@@ -40,7 +42,7 @@ type AtoiT_Raw
      = Ptr CString
     -> CString
     -> Ptr Int64
-    -> IO Bool
+    -> IO CError
 
 wrapAtoi :: AtoiT_Raw -> B.ByteString -> Int -> Maybe (Int64, B.ByteString)
 wrapAtoi f a len
@@ -59,7 +61,7 @@ wrapAtoi f a len
         let diff = minusPtr end' a'
         let bs'  = B.drop diff a
         return
-             ( if   not suc
+             ( if   suc == 0
                then Just (res, bs')
                else Nothing )
 
@@ -72,5 +74,3 @@ foreign import ccall unsafe
 foreign import ccall unsafe
     anemone_string_to_i64_v128
     :: AtoiT_Raw
-
-

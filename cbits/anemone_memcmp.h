@@ -1,15 +1,16 @@
 #ifndef __ANEMONE_MEMCMP_H
 #define __ANEMONE_MEMCMP_H
 
-#include "anemone_base.h"
-#include "anemone_sse.h"
-#include "anemone_twiddle.h"
 /* Anemone memory comparison functions.
  * These functions can be somewhat faster than standard memcmp because we cheat by reading past the end of the buffer.
  * Standard memcmp must be very careful about not reading past the end, in case it produces a segfault.
  * These functions assume that the buffers are padded so that reading 8 or 16 bytes past them will not segfault.
  * The value of the padding is ignored and does not affect the comparison but it is still read.
  */
+
+#include "anemone_base.h"
+#include "anemone_sse.h"
+#include "anemone_twiddle.h"
 
 /* Memory comparison functions:
  * Compare two buffers of equal length.
@@ -18,16 +19,22 @@
 
 /* Compare eight bits at a time (one byte)
  * This ought to be the slowest */
-int64_t anemone_memcmp8 (const char *as, const char* bs, uint64_t len);
+ANEMONE_INLINE
+int anemone_memcmp8 (const void *as, const void *bs, size_t len);
+
 /* Compare 64 bits at a time (eight bytes, one word)
  * This is often the fastest */
-int64_t anemone_memcmp64 (const char *as, const char* bs, uint64_t len);
+ANEMONE_INLINE
+int anemone_memcmp64 (const void *as, const void *bs, size_t len);
+
 /* Compare 128 bits at a time (sixteen bytes)
  * Uses SSE/SIMD registers */
-int64_t anemone_memcmp128(const char *as, const char* bs, uint64_t len);
+ANEMONE_INLINE
+int anemone_memcmp128 (const void *as, const void *bs, size_t len);
 
 /* Use the "best" memory comparison */
-int64_t anemone_memcmp (const char *as, const char* bs, uint64_t len);
+ANEMONE_INLINE
+int anemone_memcmp (const void *as, const void *bs, size_t len);
 
 
 /* Memory equality functions:
@@ -37,26 +44,30 @@ int64_t anemone_memcmp (const char *as, const char* bs, uint64_t len);
  */
 
 /* Compare eight bits at a time (one byte) */
-int64_t anemone_memeq8 (const char *as, const char* bs, uint64_t len);
+ANEMONE_INLINE
+int anemone_memeq8 (const void *as, const void *bs, size_t len);
+
 /* Compare 64 bits (eight bytes, one word) */
-int64_t anemone_memeq64 (const char *as, const char* bs, uint64_t len);
+ANEMONE_INLINE
+int anemone_memeq64 (const void *as, const void *bs, size_t len);
+
 /* Compare 128 bits (sixteen bytes) */
-int64_t anemone_memeq128(const char *as, const char* bs, uint64_t len);
+ANEMONE_INLINE
+int anemone_memeq128 (const void *as, const void *bs, size_t len);
 
 /* Best memory equality */
-int64_t anemone_memeq (const char *as, const char* bs, uint64_t len);
+ANEMONE_INLINE
+int anemone_memeq (const void *as, const void* bs, size_t len);
 
 
 
 /* Memory comparison functions */
-
-INLINE
-int64_t
-anemone_memcmp8 (const char *as, const char* bs, uint64_t len)
+ANEMONE_INLINE
+int anemone_memcmp8 (const void *as, const void *bs, size_t len)
 {
     for (uint64_t i = 0; i != len; ++i) {
-        char a = as[i];
-        char b = bs[i];
+        char a = *(char *)(as + i);
+        char b = *(char *)(bs + i);
         if (a != b) {
             /* We are doing an unsigned comparison, so:
              * make sure we cast to an unsigned char
@@ -70,9 +81,8 @@ anemone_memcmp8 (const char *as, const char* bs, uint64_t len)
     return 0;
 }
 
-INLINE
-int64_t
-anemone_memcmp64 (const char *as, const char* bs, uint64_t len)
+ANEMONE_INLINE
+int anemone_memcmp64 (const void *as, const void *bs, size_t len)
 {
     uint64_t rem = len;
     while (rem > 8) {
@@ -122,9 +132,8 @@ anemone_memcmp64 (const char *as, const char* bs, uint64_t len)
     */
 }
 
-INLINE
-int64_t
-anemone_memcmp128 (const char* buf1, const char* buf2, uint64_t len)
+ANEMONE_INLINE
+int anemone_memcmp128 (const void *buf1, const void *buf2, size_t len)
 {
     /* Loop through the buffers in chunks of 16 */
     while (len > 0) {
@@ -145,8 +154,8 @@ anemone_memcmp128 (const char* buf1, const char* buf2, uint64_t len)
         if (index < current_chunk) {
             /* If the index is less than current chunk, buf1[index] and buf2[index] are different */
             /* Get characters as ints so we can do signed subtract */
-            int char1 = (uint8_t)buf1[index];
-            int char2 = (uint8_t)buf2[index];
+            int char1 = *(uint8_t *)(buf1 + index);
+            int char2 = *(uint8_t *)(buf2 + index);
             /* Return the difference of the two */
             return char1 - char2;
         }
@@ -163,27 +172,23 @@ anemone_memcmp128 (const char* buf1, const char* buf2, uint64_t len)
 }
 
 /* Default to the 64 bit version */
-INLINE
-int64_t
-anemone_memcmp (const char *as, const char* bs, uint64_t len)
+ANEMONE_INLINE
+int anemone_memcmp (const void *as, const void *bs, size_t len)
 {
     return anemone_memcmp64(as, bs, len);
 }
 
 
 /* Memory equality functions */
-
-INLINE
-int64_t
-anemone_memeq8 (const char *as, const char* bs, uint64_t len)
+ANEMONE_INLINE
+int anemone_memeq8 (const void *as, const void *bs, size_t len)
 {
     /* I don't think we can improve upon memcmp8 for this case */
     return anemone_memcmp8(as, bs, len);
 }
 
-INLINE
-int64_t
-anemone_memeq64 (const char *as, const char* bs, uint64_t len)
+ANEMONE_INLINE
+int anemone_memeq64 (const void *as, const void *bs, size_t len)
 {
     /* Very similar to memcmp64, but don't endian swap */
     uint64_t rem = len;
@@ -208,9 +213,8 @@ anemone_memeq64 (const char *as, const char* bs, uint64_t len)
     return a - b;
 }
 
-INLINE
-int64_t
-anemone_memeq128 (const char* buf1, const char* buf2, uint64_t len)
+ANEMONE_INLINE
+int anemone_memeq128 (const void *buf1, const void *buf2, size_t len)
 {
     /* Very similar to memcmp128 but if a difference is found, return 1 */
     while (len > 0) {
@@ -246,9 +250,8 @@ anemone_memeq128 (const char* buf1, const char* buf2, uint64_t len)
 }
 
 /* Default to the 64 bit version */
-INLINE
-int64_t
-anemone_memeq (const char* buf1, const char* buf2, uint64_t len)
+ANEMONE_INLINE
+int anemone_memeq (const void *buf1, const void *buf2, size_t len)
 {
     return anemone_memeq64(buf1, buf2, len);
 }

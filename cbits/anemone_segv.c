@@ -53,4 +53,3 @@ void anemone_segv_install_handler (const char *user_data, size_t user_data_size)
 
     sigaction (SIGSEGV, &act, 0);
 }
-

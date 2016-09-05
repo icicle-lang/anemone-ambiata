@@ -6,18 +6,20 @@ module Anemone.Foreign.Strtod (
   , strtod
   ) where
 
-import Foreign.C.String
-import Foreign.Ptr
-import Foreign.Marshal.Alloc
-import Foreign.Storable
-
-import System.IO
-import System.IO.Unsafe
+import           Anemone.Foreign.Data
 
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Unsafe as B
 
-import P
+import           Foreign.C.String (CString)
+import           Foreign.Marshal.Alloc (alloca)
+import           Foreign.Ptr (Ptr, plusPtr, minusPtr)
+import           Foreign.Storable (peek, poke)
+
+import           System.IO (IO)
+import           System.IO.Unsafe (unsafePerformIO)
+
+import           P
 
 strtod :: StrtodT
 strtod bs
@@ -32,7 +34,7 @@ type StrtodT_Raw
      = Ptr CString
     -> CString
     -> Ptr Double
-    -> IO Bool
+    -> IO CError
 
 wrapStrtod :: StrtodT_Raw -> B.ByteString -> Int -> Maybe (Double, B.ByteString)
 wrapStrtod f a len
@@ -51,7 +53,7 @@ wrapStrtod f a len
         let diff = minusPtr end' a'
         let bs'  = B.drop diff a
         return
-             ( if   not suc
+             ( if   suc == 0
                then Just (res, bs')
                else Nothing )
 

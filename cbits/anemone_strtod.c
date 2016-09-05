@@ -6,11 +6,9 @@
 #include <stddef.h> // size_t
 #include <stdio.h> // size_t
 
-
-
-static const size_t anemone_strtod_double_max_size = 32;
-
-static double INLINE anemone_strtod_unsafe_dpow10(int n)
+ANEMONE_STATIC
+ANEMONE_INLINE
+double anemone_strtod_unsafe_dpow10 (int n)
 {
     static const double e[] = {
         1e+0,
@@ -49,7 +47,9 @@ static double INLINE anemone_strtod_unsafe_dpow10(int n)
     return e[n];
 }
 
-static int64_t INLINE anemone_strtod_unsafe_ipow10(int n)
+ANEMONE_STATIC
+ANEMONE_INLINE
+int64_t anemone_strtod_unsafe_ipow10 (int n)
 {
     static const int64_t e[] = {
         1LL,
@@ -75,7 +75,9 @@ static int64_t INLINE anemone_strtod_unsafe_ipow10(int n)
     return e[n];
 }
 
-static double INLINE anemone_strtod_from_parts_fast (double significand, int exponent)
+ANEMONE_STATIC
+ANEMONE_INLINE
+double anemone_strtod_from_parts_fast (double significand, int exponent)
 {
     if (exponent < -308)
         return 0.0;
@@ -86,7 +88,9 @@ static double INLINE anemone_strtod_from_parts_fast (double significand, int exp
         return significand / anemone_strtod_unsafe_dpow10 (-exponent);
 }
 
-static double INLINE anemone_strtod_from_parts (double significand, int exponent)
+ANEMONE_STATIC
+ANEMONE_INLINE
+double anemone_strtod_from_parts (double significand, int exponent)
 {
     if (exponent < -308) {
         double value;
@@ -98,7 +102,7 @@ static double INLINE anemone_strtod_from_parts (double significand, int exponent
     }
 }
 
-bool anemone_strtod (char **pp, char *pe, double *output_ptr)
+error_t anemone_strtod (char **pp, char *pe, double *output_ptr)
 {
     char *p = *pp;
     if (!p) return 1;
@@ -141,7 +145,7 @@ bool anemone_strtod (char **pp, char *pe, double *output_ptr)
 
     char *ps_int_part = p;
     uint64_t int_part;
-    bool error = anemone_string_to_ui64_v128 (&p, pe, &int_part);
+    error_t error = anemone_string_to_ui64_v128 (&p, pe, &int_part);
     if (error) return error;
 
     int int_part_digits = p - ps_int_part;
@@ -157,7 +161,7 @@ bool anemone_strtod (char **pp, char *pe, double *output_ptr)
         char *ps = p;
 
         uint64_t frac_part;
-        bool error = anemone_string_to_ui64_v128 (&p, pe, &frac_part);
+        error_t error = anemone_string_to_ui64_v128 (&p, pe, &frac_part);
         if (error) return error;
 
         int digits = p - ps;
@@ -186,7 +190,7 @@ bool anemone_strtod (char **pp, char *pe, double *output_ptr)
             p++;
 
             uint64_t exp_part;
-            bool error = anemone_string_to_ui64_v128 (&p, pe, &exp_part);
+            error_t error = anemone_string_to_ui64_v128 (&p, pe, &exp_part);
             if (error) return error;
 
             exponent -= (int64_t)exp_part;
@@ -194,7 +198,7 @@ bool anemone_strtod (char **pp, char *pe, double *output_ptr)
             if (p[0] == '+') p++;
 
             uint64_t exp_part;
-            bool error = anemone_string_to_ui64_v128 (&p, pe, &exp_part);
+            error_t error = anemone_string_to_ui64_v128 (&p, pe, &exp_part);
             if (error) return error;
 
             exponent += (int64_t)exp_part;

@@ -1,14 +1,30 @@
 #ifndef __ANEMONE_TWIDDLE_H
 #define __ANEMONE_TWIDDLE_H
 
-INLINE
-uint64_t anemone_bswap64(int64_t x)
+#include "anemone_base.h"
+
+#include <stdint.h>
+
+ANEMONE_INLINE
+uint16_t anemone_bswap16 (uint16_t x)
+{
+    return (x >> 8) | (x << 8);
+}
+
+ANEMONE_INLINE
+uint32_t anemone_bswap32 (uint32_t x)
+{
+    return __builtin_bswap32 (x);
+}
+
+ANEMONE_INLINE
+uint64_t anemone_bswap64 (uint64_t x)
 {
     return __builtin_bswap64(x);
 }
 
-INLINE
-uint64_t anemone_remainder_mask64(uint64_t remainder)
+ANEMONE_INLINE
+uint64_t anemone_remainder_mask64 (uint64_t remainder)
 {
     switch (remainder) {
     case 0:
@@ -34,4 +50,3 @@ uint64_t anemone_remainder_mask64(uint64_t remainder)
 }
 
 #endif//__ANEMONE_TWIDDLE_H
-
