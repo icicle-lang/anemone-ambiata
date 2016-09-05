@@ -27,7 +27,6 @@ library
                      , text                            == 1.2.*
                      , transformers                    >= 0.3        && < 0.6
                      , vector                          >= 0.10       && < 0.12
-
   ghc-options:
                        -Wall
 
@@ -48,6 +47,7 @@ library
                        Anemone.Foreign.Pack
                        Anemone.Foreign.Segv
                        Anemone.Foreign.Strtod
+                       Anemone.Foreign.VInt
 
   include-dirs:
                        cbits
@@ -63,6 +63,7 @@ library
                        anemone_sse.h
                        anemone_strtod.h
                        anemone_twiddle.h
+                       anemone_vint.h
 
   includes:
                        anemone_atoi.h
@@ -75,6 +76,7 @@ library
                        anemone_sse.h
                        anemone_strtod.h
                        anemone_twiddle.h
+                       anemone_vint.h
 
   c-sources:
                        cbits/anemone_atoi.c
@@ -85,6 +87,7 @@ library
                        cbits/anemone_pack.c
                        cbits/anemone_segv.c
                        cbits/anemone_strtod.c
+                       cbits/anemone_vint.c
 
   cc-options:
                        -std=c99 -O3 -msse4.2 -march=native -Wall -Werror
@@ -105,6 +108,7 @@ test-suite test
                      , ambiata-anemone
                      , ambiata-disorder-core
                      , ambiata-disorder-corpus
+                     , ambiata-disorder-jack
                      , ambiata-p
                      , bytestring                      == 0.10.*
                      , text                            == 1.2.*
