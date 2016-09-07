@@ -24,10 +24,8 @@
 //
 ANEMONE_STATIC
 ANEMONE_INLINE
-void vint_write (int64_t v, uint8_t **ppout)
+uint8_t* vint_write (int64_t v, uint8_t *pout)
 {
-    uint8_t *pout = *ppout;
-
     if (v >= -112 && v <= 127) {
         *(int8_t *)pout = v;
         pout++;
@@ -98,7 +96,7 @@ void vint_write (int64_t v, uint8_t **ppout)
         }
     }
 
-    *ppout = pout;
+    return pout;
 }
 
 ANEMONE_STATIC
@@ -124,51 +122,68 @@ bool_t vint_negative (int8_t first)
 
 ANEMONE_STATIC
 ANEMONE_INLINE
-int64_t vint_read (const uint8_t **pp)
+error_t vint_read (const uint8_t **pp, const uint8_t *pe, int64_t *out)
 {
+#define ENSURE_BYTES(n) if (p + n > pe) return 1
+
     const uint8_t *p = *pp;
+
+    ENSURE_BYTES(1);
+
     int8_t first = *p;
     p++;
 
     if (vint_single (first)) {
         *pp = p;
-        return first;
+        *out = first;
+        return 0;
     }
 
     int remaining = vint_remaining (first);
     int64_t x = 0;
+
+    ENSURE_BYTES(remaining);
 
     for (int i = 0; i < remaining; i++) {
         x = x << 8 | p[i];
     }
 
     *pp = p + remaining;
-
-    return vint_negative (first) ? ~x : x;
-}
-
-size_t anemone_pack_vint (int64_t n, const int64_t *p, uint8_t *pout0)
-{
-    uint8_t *pout = pout0;
-
-    for (int i = 0; i < n; i++) {
-        vint_write (p[i], &pout);
-    }
-
-    return pout - pout0;
-}
-
-error_t anemone_unpack_vint (int64_t n, const uint8_t *p0, const uint8_t *pe, int64_t *pout)
-{
-    const uint8_t *p = p0;
-
-    for (int i = 0; i < n; i++) {
-        if (p < pe) {
-            pout[i] = vint_read (&p);
-        } else {
-            return 1;
-        }
-    }
+    *out = vint_negative (first) ? ~x : x;
 
     return 0;
+}
+
+uint8_t* anemone_write_vint (int64_t x, uint8_t *pout)
+{
+    return vint_write (x, pout);
+}
+
+uint8_t* anemone_write_vint_array (int64_t n, const int64_t *p, uint8_t *pout)
+{
+    for (int i = 0; i < n; i++) {
+        pout = vint_write (p[i], pout);
+    }
+
+    return pout;
+}
+
+error_t anemone_read_vint (const uint8_t **pp, const uint8_t *pe, int64_t *pout)
+{
+    return vint_read (pp, pe, pout);
+}
+
+error_t anemone_read_vint_array (const uint8_t **pp, const uint8_t *pe, int64_t n, int64_t *pout)
+{
+    const uint8_t *p = *pp;
+    error_t err = 0;
+
+    for (int i = 0; i < n; i++) {
+        err = vint_read (&p, pe, pout + i);
+        if (err) goto done;
+    }
+
+done:
+    *pp = p;
+    return err;
 }

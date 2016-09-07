@@ -5,6 +5,10 @@ module Test.Anemone.Foreign.VInt where
 
 import           Anemone.Foreign.VInt
 
+import           Data.ByteString (ByteString)
+import qualified Data.ByteString as B
+import qualified Data.ByteString.Builder as Builder
+import qualified Data.ByteString.Lazy as Lazy
 import qualified Data.Vector.Storable as Storable
 
 import           Disorder.Core (ExpectedTestSpeed(..), disorderCheckEnvAll)
@@ -13,21 +17,40 @@ import           Disorder.Jack (tripping, listOfN, sizedBounded, choose, arbitra
 
 import           P
 
+import qualified Prelude as Savage
+
 import           System.IO (IO)
 
 import           Test.QuickCheck.Instances ()
 
 
+prop_roundtrip_vint_builder :: Property
+prop_roundtrip_vint_builder =
+  gamble sizedBounded $
+    tripping (Lazy.toStrict . Builder.toLazyByteString . bVInt) (fmap noLeftovers . decodeVInt)
+
 prop_roundtrip_vint :: Property
 prop_roundtrip_vint =
-  gamble (Storable.fromList <$> listOfN 0 10000 sizedBounded) $ \xs ->
-    tripping packVInt (unpackVInt $ Storable.length xs) xs
+  gamble sizedBounded $
+    tripping encodeVInt (fmap noLeftovers . decodeVInt)
 
-prop_unpack_safe :: Property
-prop_unpack_safe =
+prop_roundtrip_vint_array :: Property
+prop_roundtrip_vint_array =
+  gamble (Storable.fromList <$> listOfN 1 1 sizedBounded) $ \xs ->
+    tripping encodeVIntArray (fmap noLeftovers . decodeVIntArray (Storable.length xs)) xs
+
+noLeftovers :: (a, ByteString) -> a
+noLeftovers (xs, bs) =
+  if B.null bs then
+    xs
+  else
+    Savage.error $ "prop_roundtrip_vint: unexpected leftover bytes " <> show bs
+
+xprop_unpack_safe :: Property
+xprop_unpack_safe =
   gamble (choose (-1, 10000000)) $ \n ->
   gamble arbitrary $ \bs ->
-    case unpackVInt n bs of
+    case decodeVIntArray n bs of
       Nothing ->
         True
       Just _ ->
