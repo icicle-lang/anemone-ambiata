@@ -59,6 +59,7 @@ library
                        anemone_ffi.h
                        anemone_hash.h
                        anemone_memcmp.h
+                       anemone_mempool.h
                        anemone_pack.h
                        anemone_sse.h
                        anemone_strtod.h
@@ -72,6 +73,7 @@ library
                        anemone_ffi.h
                        anemone_hash.h
                        anemone_memcmp.h
+                       anemone_mempool.h
                        anemone_pack.h
                        anemone_sse.h
                        anemone_strtod.h
@@ -84,13 +86,14 @@ library
                        cbits/anemone_ffi.c
                        cbits/anemone_hash.c
                        cbits/anemone_memcmp.c
+                       cbits/anemone_mempool.c
                        cbits/anemone_pack.c
                        cbits/anemone_segv.c
                        cbits/anemone_strtod.c
                        cbits/anemone_vint.c
 
   cc-options:
-                       -std=c99 -O3 -msse4.2 -march=native -Wall -Werror
+                       -std=c99 -O3 -msse4.2 -Wall -Werror -DCABAL=1
 
 
 test-suite test
@@ -142,4 +145,4 @@ benchmark bench
                        cbits/bench_strtod.c
 
   cc-options:
-                       -std=c99 -O3 -msse4.2 -march=native
+                       -std=c99 -O3 -msse4.2 -Wall -Werror -DCABAL=1
