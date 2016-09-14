@@ -7,7 +7,7 @@
 #define ANEMONE_MEMPOOL_WHEN_DEBUG(f)
 #endif
 
-const size_t anemone_block_size = 1 * 1024 * 1024;
+static const size_t anemone_block_size = 1 * 1024 * 1024;
 
 // A single block containing some allocated data.
 // It keeps a link to the previous block so it can be freed.

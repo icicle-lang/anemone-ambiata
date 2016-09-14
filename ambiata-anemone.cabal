@@ -119,6 +119,12 @@ test-suite test
                      , quickcheck-instances            == 0.3.*
                      , vector                          >= 0.10       && < 0.12
 
+  c-sources:
+                       ctest/test_mempool.c
+
+  cc-options:
+                       -std=c99 -O3 -msse4.2 -Wall -Werror -DCABAL=1
+
 
 benchmark bench
   type:                exitcode-stdio-1.0

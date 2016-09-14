@@ -48,6 +48,8 @@ void * anemone_mempool_alloc_block (anemone_mempool_t *pool, size_t num_bytes)
   // Allocating into the current block failed, so we need a new block.
   // Will the requested amount fit in a single block?
   if (num_bytes <= anemone_block_size) {
+
+
     // If so, add a new block as usual, then set it as the current block
     anemone_mempool_add_block (pool);
     ANEMONE_MEMPOOL_TRY_ALLOC(anemone_mempool_alloc_block);
