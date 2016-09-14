@@ -1,6 +1,7 @@
 #include "anemone_mempool.h"
 
 #include <errno.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <sys/resource.h>
 
@@ -54,7 +55,7 @@ bool_t test_mempool_free(uint64_t outer_iterations, uint64_t inner_iterations, s
       // Allocate, make sure it's not null
       void *value = anemone_mempool_alloc(pool, max_bytes);
       if (!value) {
-        fprintf (stderr, "anemone_mempool_alloc returned null, outer iteration %llu, inner iteration %llu\n\ttried to allocate %ld bytes", outer, inner, max_bytes);
+        fprintf (stderr, "anemone_mempool_alloc returned null, outer iteration %" PRIu64 ", inner iteration %" PRIu64 "\n\ttried to allocate %ld bytes", outer, inner, max_bytes);
         return 0;
       }
     }
@@ -63,7 +64,7 @@ bool_t test_mempool_free(uint64_t outer_iterations, uint64_t inner_iterations, s
 
     struct rusage usage;
     if (getrusage(RUSAGE_SELF, &usage)) {
-      fprintf (stderr, "call to getrusage failed, iteration %llu. errno = %d\n", outer, errno);
+      fprintf (stderr, "call to getrusage failed, iteration %" PRIu64 ". errno = %d\n", outer, errno);
       return 0;
     }
 
@@ -74,7 +75,7 @@ bool_t test_mempool_free(uint64_t outer_iterations, uint64_t inner_iterations, s
       // Give it a megabyte of leeway so that any unexpected allocations from GHC don't get in the way.
       long check_size = first_size + 1024*1024;
       if (new_size > check_size) {
-        fprintf (stderr, "iteration %llu\n\tnew_size > first_size + 1MB\n\t%ld (bytes) > %ld (bytes)\n", outer, new_size, first_size);
+        fprintf (stderr, "iteration %" PRIu64 "\n\tnew_size > first_size + 1MB\n\t%ld (bytes) > %ld (bytes)\n", outer, new_size, first_size);
         return 0;
       }
     }
@@ -113,7 +114,7 @@ bool_t test_mempool_nonoverlap(uint64_t iterations, size_t max_bytes)
 
     for (uint64_t byte = 0; byte != max_bytes; ++byte) {
       if (value[byte] != count_byte) {
-        fprintf (stderr, "at iteration %llu, the %llu-th byte expected to be %d but got %d", i, byte, count_byte, value[byte]);
+        fprintf (stderr, "at iteration %" PRIu64 ", the %" PRIu64 "-th byte expected to be %d but got %d", i, byte, count_byte, value[byte]);
         return 0;
       }
     }
