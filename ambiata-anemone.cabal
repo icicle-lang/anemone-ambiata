@@ -13,8 +13,8 @@ description:           The C standard library (libc) is rubbish and slow.
                        I would like a repository where I can put different versions of these functions, with benchmarks, and quickcheck tests without muddying up Icicle, but it would have to be open source.
 
 extra-source-files:
-    cbits/*.h
-    cbits/*.c
+    csrc/*.h
+    csrc/*.c
 
 
 library
@@ -50,7 +50,7 @@ library
                        Anemone.Foreign.VInt
 
   include-dirs:
-                       cbits
+                       csrc
 
   install-includes:
                        anemone_atoi.h
@@ -59,6 +59,7 @@ library
                        anemone_ffi.h
                        anemone_hash.h
                        anemone_memcmp.h
+                       anemone_mempool.h
                        anemone_pack.h
                        anemone_sse.h
                        anemone_strtod.h
@@ -72,6 +73,7 @@ library
                        anemone_ffi.h
                        anemone_hash.h
                        anemone_memcmp.h
+                       anemone_mempool.h
                        anemone_pack.h
                        anemone_sse.h
                        anemone_strtod.h
@@ -79,18 +81,19 @@ library
                        anemone_vint.h
 
   c-sources:
-                       cbits/anemone_atoi.c
-                       cbits/anemone_atoi_sse.c
-                       cbits/anemone_ffi.c
-                       cbits/anemone_hash.c
-                       cbits/anemone_memcmp.c
-                       cbits/anemone_pack.c
-                       cbits/anemone_segv.c
-                       cbits/anemone_strtod.c
-                       cbits/anemone_vint.c
+                       csrc/anemone_atoi.c
+                       csrc/anemone_atoi_sse.c
+                       csrc/anemone_ffi.c
+                       csrc/anemone_hash.c
+                       csrc/anemone_memcmp.c
+                       csrc/anemone_mempool.c
+                       csrc/anemone_pack.c
+                       csrc/anemone_segv.c
+                       csrc/anemone_strtod.c
+                       csrc/anemone_vint.c
 
   cc-options:
-                       -std=c99 -O3 -msse4.2 -march=native -Wall -Werror
+                       -std=c99 -O3 -msse4.2 -Wall -Werror -DCABAL=1
 
 
 test-suite test
@@ -116,6 +119,12 @@ test-suite test
                      , quickcheck-instances            == 0.3.*
                      , vector                          >= 0.10       && < 0.12
 
+  c-sources:
+                       ctest/test_mempool.c
+
+  cc-options:
+                       -std=c99 -O3 -msse4.2 -Wall -Werror -DCABAL=1
+
 
 benchmark bench
   type:                exitcode-stdio-1.0
@@ -137,9 +146,9 @@ benchmark bench
                      , text                            == 1.2.*
 
   c-sources:
-                       cbits/bench_memcmp.c
-                       cbits/bench_atoi.c
-                       cbits/bench_strtod.c
+                       cbench/bench_memcmp.c
+                       cbench/bench_atoi.c
+                       cbench/bench_strtod.c
 
   cc-options:
-                       -std=c99 -O3 -msse4.2 -march=native
+                       -std=c99 -O3 -msse4.2 -Wall -Werror -DCABAL=1
