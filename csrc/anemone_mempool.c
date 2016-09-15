@@ -20,7 +20,7 @@ anemone_block_t * anemone_block_create (anemone_block_t *prev, size_t num_bytes)
 ANEMONE_STATIC
 void anemone_block_free (anemone_block_t *block)
 {
-  if (block == 0) return;
+  if (block == NULL) return;
 
   ANEMONE_MEMPOOL_WHEN_DEBUG(fprintf (stderr, "iblock_free: %p\n", block->ptr));
 
@@ -54,7 +54,7 @@ void * anemone_mempool_alloc_block (anemone_mempool_t *pool, size_t num_bytes)
     anemone_mempool_add_block (pool);
     ANEMONE_MEMPOOL_TRY_ALLOC(anemone_mempool_alloc_block);
 
-    return 0;
+    return NULL;
   } else {
     // The requested size is larger than a normal block.
     // We will allocate a single block of the exact size and inject it before the current block.
@@ -99,7 +99,7 @@ void anemone_mempool_debug_block_usage (anemone_mempool_t *pool)
   anemone_block_t *block = pool->last;
   uint64_t size = 0;
   uint64_t blocks = 0;
-  while (block != 0) {
+  while (block != NULL) {
     size += anemone_block_size;
     blocks++;
     block = block->prev;
