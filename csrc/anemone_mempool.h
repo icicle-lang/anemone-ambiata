@@ -1,5 +1,7 @@
 #include "anemone_base.h"
 
+#include <string.h>
+
 #if ANEMONE_MEMPOOL_DEBUG
 #include <stdio.h>
 #define ANEMONE_MEMPOOL_WHEN_DEBUG(f) f
@@ -60,4 +62,15 @@ void * anemone_mempool_alloc (anemone_mempool_t *pool, size_t num_bytes)
 
     return anemone_mempool_alloc_block (pool, num_bytes);
 }
+
+// Allocate data into the pool, zeroing its contents
+ANEMONE_INLINE
+void * anemone_mempool_calloc (anemone_mempool_t *pool, size_t num_items, size_t num_bytes)
+{
+    size_t total = num_items * num_bytes;
+    void *ret = anemone_mempool_alloc (pool, total);
+    memset (ret, 0, total);
+    return ret;
+}
+
 

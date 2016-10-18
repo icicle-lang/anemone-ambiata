@@ -9,6 +9,7 @@ module Test.Anemone.Foreign.Mempool where
 
 import Anemone.Foreign.Data
 import qualified Anemone.Foreign.Mempool as Mempool
+import qualified Foreign.Marshal.Array as Marshal
 
 import            P
 import            Disorder.Core
@@ -51,6 +52,17 @@ prop_mempool_sanity
     -- If all pointers are distinct, length of uniques should be same as original length
     let uniqs = List.nub vals
     return (counterexample (show vals) $ length vals === length uniqs)
+
+prop_mempool_calloc :: Property
+prop_mempool_calloc
+ = forAll (choose (1,100)) $ \num_items ->
+   testIO $ do
+    pool <- Mempool.create
+    arr <- Mempool.calloc pool (fromIntegral num_items)
+    vals <- Marshal.peekArray num_items arr
+    Mempool.free pool
+    return (vals === List.replicate num_items (CInt 0))
+
 
 iterations :: Gen CInt
 iterations = choose (1, 100)

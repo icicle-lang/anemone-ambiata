@@ -79,6 +79,12 @@ void * hs_anemone_mempool_alloc (anemone_mempool_t *pool, size_t num_bytes)
   return anemone_mempool_alloc(pool, num_bytes);
 }
 
+void * hs_anemone_mempool_calloc (anemone_mempool_t *pool, size_t num_items, size_t num_bytes)
+{
+  return anemone_mempool_calloc (pool, num_items, num_bytes);
+}
+
+
 // Create a new memory pool
 anemone_mempool_t * anemone_mempool_create ()
 {
