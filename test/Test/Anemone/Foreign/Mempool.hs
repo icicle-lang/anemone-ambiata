@@ -55,7 +55,9 @@ prop_mempool_sanity
 
 prop_mempool_calloc :: Property
 prop_mempool_calloc
- = forAll iterations $ \num_items ->
+ -- generate a CSize big enough, but not too big.
+ -- 2 megabytes is a bit too big to convert to a list.
+ = forAll (choose (1, 1000)) $ \num_items ->
    testIO $ do
     pool <- Mempool.create
     arr <- Mempool.calloc pool (fromIntegral num_items)
