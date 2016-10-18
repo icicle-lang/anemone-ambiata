@@ -18,21 +18,26 @@ import qualified  Data.ByteString as B
 testCmp'  :: (Eq a, Show a)
           => (B.ByteString -> B.ByteString -> a)
           -> (B.ByteString -> B.ByteString -> a)
-          -> B.ByteString -> B.ByteString -> Property
-testCmp' good check a b
+          -> B.ByteString -> B.ByteString -> B.ByteString -> Property
+testCmp' good check prefix a b
  = let a' = pad a
        b' = pad b
+       a'' = prefix <> a'
+       b'' = prefix <> b'
    in  counterexample (show (a',b'))
-       ( (good a' b') === check a' b')
+       ( good a' b' === check a' b')
+       -- Testing with an equal same prefix makes it more likely to hit weird cases
+  .&&. counterexample (show (a'',b''))
+       ( good a'' b'' === check a'' b'')
  where
   len = min (B.length a) (B.length b)
   pad x = B.take len x
 
 
-testCmp :: Base.MemcmpT -> B.ByteString -> B.ByteString -> Property
+testCmp :: Base.MemcmpT -> B.ByteString -> B.ByteString -> B.ByteString -> Property
 testCmp = testCmp' compare
 
-testEq :: Base.MemeqT -> B.ByteString -> B.ByteString -> Property
+testEq :: Base.MemeqT -> B.ByteString -> B.ByteString -> B.ByteString -> Property
 testEq = testCmp' (==)
 
 prop_memcmp8
