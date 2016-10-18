@@ -196,7 +196,7 @@ int anemone_memeq64 (const void *as, const void *bs, size_t len)
         int64_t a = *(uint64_t*)as;
         int64_t b = *(uint64_t*)bs;
         if (a != b) {
-            return a - b;
+            return 1;
         }
         rem -= 8;
         as += 8;
@@ -210,7 +210,11 @@ int anemone_memeq64 (const void *as, const void *bs, size_t len)
 
     int64_t a = *(uint64_t*)as & mask;
     int64_t b = *(uint64_t*)bs & mask;
-    return a - b;
+    int64_t diff = a - b;
+    /* Don't cast the difference down to 32-bit!
+     * This was throwing away differences in the second 4 bytes.
+     * */
+    return diff ? 1 : 0;
 }
 
 ANEMONE_INLINE
