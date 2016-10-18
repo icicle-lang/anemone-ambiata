@@ -44,6 +44,7 @@ library
                        Anemone.Foreign.Memcmp
                        Anemone.Foreign.Memcmp.Base
                        Anemone.Foreign.Memcmp.Export
+                       Anemone.Foreign.Mempool
                        Anemone.Foreign.Pack
                        Anemone.Foreign.Segv
                        Anemone.Foreign.Strtod
