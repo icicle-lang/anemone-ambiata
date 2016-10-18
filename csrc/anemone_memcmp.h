@@ -180,6 +180,13 @@ int anemone_memcmp (const void *as, const void *bs, size_t len)
 
 
 /* Memory equality functions */
+
+/* The idea here is that if you only care whether two things are equal, but not which is larger,
+ * you should be able to take some shortcuts.
+ * This is particularly true of the 64-bit and 128-bit versions, since the 64-bit version
+ * does not need to swap the endianness in order to compare.
+ * However, this doesn't appear to be that much of a win in practice. */
+
 ANEMONE_INLINE
 int anemone_memeq8 (const void *as, const void *bs, size_t len)
 {
@@ -196,6 +203,10 @@ int anemone_memeq64 (const void *as, const void *bs, size_t len)
         int64_t a = *(uint64_t*)as;
         int64_t b = *(uint64_t*)bs;
         if (a != b) {
+            /* We cannot just return the difference (a - b) here, because
+             * 1. it would be too big to fit in an int
+             * 2. it will not be useful anyway, as the 64-bits are the wrong endian
+             * So instead, just return a constant 1 to note they are different in some way. */
             return 1;
         }
         rem -= 8;
