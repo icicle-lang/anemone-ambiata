@@ -55,7 +55,7 @@ prop_mempool_sanity
 
 prop_mempool_calloc :: Property
 prop_mempool_calloc
- = forAll (choose (1,100)) $ \num_items ->
+ = forAll iterations $ \num_items ->
    testIO $ do
     pool <- Mempool.create
     arr <- Mempool.calloc pool (fromIntegral num_items)
