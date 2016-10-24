@@ -2,7 +2,7 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 module Anemone.Foreign.Mempool (
-    Mempool
+    Mempool(..)
   , create
   , alloc
   , allocBytes
@@ -24,8 +24,13 @@ import           System.IO (IO)
 import qualified Prelude as Savage
 
 
+-- | The Mempool constructor must be exposed to work in FFI calls.
+-- However, it must not be used in any other places.
+-- The only way to construct a Mempool is by calling @create@.
+--
+-- This infinite knot here should enforce this.
 newtype Mempool =
-  Mempool (Ptr ())
+  Mempool (Ptr Mempool)
 
 foreign import ccall unsafe "anemone_mempool_create"
   create :: IO Mempool
