@@ -1,3 +1,4 @@
+-- I just want to test the ghc-8 build
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE ScopedTypeVariables #-}
