@@ -53,7 +53,7 @@ testStrtodOnInts a
    = Nothing
 
 withSegv' f a
- = testIO $ Segv.withSegv (return . f) a
+ = testIO $ Segv.withSegv (show a) (return $ f a)
 
 prop_strtod_on_ints
  = withSegv' 
