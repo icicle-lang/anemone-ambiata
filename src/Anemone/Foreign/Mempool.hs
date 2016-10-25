@@ -14,11 +14,11 @@ module Anemone.Foreign.Mempool (
 import           Anemone.Foreign.Data
 
 import           Foreign.C.Types ( CSize(..) )
-import           Foreign.Ptr
+import           Foreign.Ptr ( Ptr )
 import           Foreign.Storable ( Storable(..) )
 
 import           P
-import           Data.Void
+import           Data.Void (Void)
 
 import           System.IO (IO)
 
