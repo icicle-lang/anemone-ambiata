@@ -7,21 +7,22 @@ module Anemone.Foreign.Segv (
   , segvRemove
   ) where
 
-import Foreign.C.String
+import           Control.Exception (bracket_)
 
-import System.IO
-
+import           Data.String (String)
 import qualified Data.ByteString.Char8 as B
 import qualified Data.ByteString.Unsafe as B
 
-import Control.Exception
+import           Foreign.C.String (CString)
 
-import P
+import           P
 
-withSegv :: (Show a) => (a -> IO b) -> a -> IO b
-withSegv f a
- = bracket_ (segvInstall (B.pack $ show a)) segvRemove
-            (f a)
+import           System.IO (IO)
+
+
+withSegv :: String -> IO a -> IO a
+withSegv example
+ = bracket_ (segvInstall (B.pack example)) segvRemove
 
 segvInstall :: B.ByteString -> IO ()
 segvInstall a
