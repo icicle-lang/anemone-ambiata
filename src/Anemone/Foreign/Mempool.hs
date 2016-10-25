@@ -11,8 +11,6 @@ module Anemone.Foreign.Mempool (
   , free
   ) where
 
-import           Anemone.Foreign.Data
-
 import           Foreign.C.Types ( CSize(..) )
 import           Foreign.Ptr ( Ptr )
 import           Foreign.Storable ( Storable(..) )
