@@ -18,6 +18,7 @@ import           Foreign.Ptr
 import           Foreign.Storable ( Storable(..) )
 
 import           P
+import           Data.Void
 
 import           System.IO (IO)
 
@@ -30,7 +31,7 @@ import qualified Prelude as Savage
 --
 -- This infinite knot here should enforce this.
 newtype Mempool =
-  Mempool (Ptr Mempool)
+  Mempool (Ptr Void)
 
 foreign import ccall unsafe "anemone_mempool_create"
   create :: IO Mempool
