@@ -25,6 +25,7 @@ library
                      , file-embed                      == 0.0.9
                      , filepath                        >= 1.3        && < 1.5
                      , text                            == 1.2.*
+                     , thyme                           >= 0.3        && < 0.4
                      , transformers                    >= 0.3        && < 0.6
                      , vector                          >= 0.10       && < 0.12
   ghc-options:
@@ -48,6 +49,7 @@ library
                        Anemone.Foreign.Pack
                        Anemone.Foreign.Segv
                        Anemone.Foreign.Strtod
+                       Anemone.Foreign.Time
                        Anemone.Foreign.VInt
 
   include-dirs:
@@ -91,6 +93,7 @@ library
                        csrc/anemone_pack.c
                        csrc/anemone_segv.c
                        csrc/anemone_strtod.c
+                       csrc/anemone_time.c
                        csrc/anemone_vint.c
 
   cc-options:
@@ -115,9 +118,10 @@ test-suite test
                      , ambiata-disorder-jack
                      , ambiata-p
                      , bytestring                      == 0.10.*
-                     , text                            == 1.2.*
                      , QuickCheck                      >= 2.8.2      && < 2.9
                      , quickcheck-instances            == 0.3.*
+                     , text                            == 1.2.*
+                     , thyme                           >= 0.3        && < 0.4
                      , vector                          >= 0.10       && < 0.12
 
   c-sources:
@@ -144,7 +148,9 @@ benchmark bench
                      , bytestring                      == 0.10.*
                      , criterion                       == 1.1.*
                      , hashable                        == 1.2.*
+                     , old-locale                      == 1.0.*
                      , text                            == 1.2.*
+                     , thyme                           >= 0.3        && < 0.4
 
   c-sources:
                        cbench/bench_memcmp.c

@@ -4,7 +4,7 @@
 #include "anemone_base.h"
 
 ANEMONE_INLINE
-bool_t anemone_text_is_digit (char c)
+bool_t anemone_is_digit (char c)
 {
     return c >= '0' && c <= '9';
 }

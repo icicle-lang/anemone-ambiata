@@ -18,7 +18,7 @@ error_t anemone_string_to_i64 (char **pp, char *pe, int64_t *output_ptr)
     /* validate digits */
     uint64_t digits = 0;
     while (digits < buffer_size) {
-        if (!anemone_text_is_digit (p[digits]))
+        if (!anemone_is_digit (p[digits]))
             break;
         digits++;
     }

@@ -6,6 +6,7 @@
 
 import qualified Anemone.Foreign.FFI as FoFFI
 import qualified Anemone.Foreign.Hash as FoHash
+import qualified Anemone.Foreign.Time as FoTime
 import qualified Bench.Foreign.Memcmp as FoMemcmp
 import qualified Bench.Foreign.Atoi as FoAtoi
 import qualified Bench.Foreign.Strtod as FoStrtod
@@ -15,12 +16,15 @@ import           Criterion.Types (Config(..))
 
 import           Data.ByteString (ByteString)
 import qualified Data.ByteString as B
+import qualified Data.ByteString.Char8 as Char8
 import           Data.Hashable (hash)
+import           Data.Thyme (Day)
+import qualified Data.Thyme.Format as Thyme
 
 import           System.IO (IO)
+import           System.Locale (defaultTimeLocale)
 
 import           P
-
 
 
 main :: IO ()
@@ -31,6 +35,7 @@ main
  , bench_atoi
  , bench_strtod
  , bench_hash
+ , bench_time
  ]
 
 benchConfig :: Config
@@ -143,3 +148,21 @@ bench_hash
    , "12345678901234567890123456789012345678901234567890123456"
    , "1234567890123456789012345678901234567890123456789012345678901234"
    ]
+
+bench_time :: Benchmark
+bench_time
+ = bgroup "String to Day"
+ [ go_all "Anemone.parseDate" (fmap fst . FoTime.parseDate)
+ , go_all "Thyme.parseTime" thyme
+ ]
+
+ where
+  go_all nm (f :: ByteString -> Maybe Day)
+   = bgroup nm
+   $ fmap (\str -> bench (Char8.unpack str) $ nf f str)
+   [ "2016-12-31"
+   ]
+
+  thyme :: ByteString -> Maybe Day
+  thyme
+   = Thyme.parseTime defaultTimeLocale "%Y-%m-%d" . Char8.unpack
