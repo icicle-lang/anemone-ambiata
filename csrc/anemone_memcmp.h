@@ -108,10 +108,8 @@ int anemone_memcmp64 (const void *as, const void *bs, size_t len)
     if (rem == 0)
         return 0;
 
-    uint64_t mask = anemone_remainder_mask64(rem);
-
-    uint64_t a = anemone_bswap64(*(uint64_t*)as & mask);
-    uint64_t b = anemone_bswap64(*(uint64_t*)bs & mask);
+    uint64_t a = anemone_bswap64 (anemone_partial_load64 (as, rem) );
+    uint64_t b = anemone_bswap64 (anemone_partial_load64 (bs, rem) );
     if (a == b)
        return 0;
     else if (a > b)
@@ -217,10 +215,8 @@ int anemone_memeq64 (const void *as, const void *bs, size_t len)
     if (rem == 0)
         return 0;
 
-    uint64_t mask = anemone_remainder_mask64(rem);
-
-    int64_t a = *(uint64_t*)as & mask;
-    int64_t b = *(uint64_t*)bs & mask;
+    int64_t a = anemone_partial_load64 (as, rem);
+    int64_t b = anemone_partial_load64 (bs, rem);
     if (a != b)
       return 1;
     else

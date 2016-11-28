@@ -47,4 +47,44 @@ uint64_t anemone_remainder_mask64 (uint64_t remainder)
     return 0x0000000000000000;
 }
 
+ANEMONE_INLINE
+uint64_t anemone_partial_load64 (const void *ptr, size_t len)
+{
+    if (len >= 8) {
+        return *(uint64_t*)ptr;
+    }
+
+    uint8_t *ptr8 = (uint8_t*)ptr;
+    uint32_t *ptr32 = (uint32_t*)ptr;
+    uint64_t into = 0;
+
+    switch (len) {
+    case 0:
+        break;
+    case 1:
+        into = *ptr8;
+        break;
+    case 2:
+        into = *ptr8 | (uint64_t)*(ptr8+1) << 8;
+        break;
+    case 3:
+        into = *ptr8 | (uint64_t)*(ptr8+1) << 8 | (uint64_t)*(ptr8+2) << 16;
+        break;
+    case 4:
+        into = *ptr32;
+        break;
+    case 5:
+        into = *ptr32 | (uint64_t)*(ptr8+4) << 32;
+        break;
+    case 6:
+        into = *ptr32 | (uint64_t)*(ptr8+4) << 32 | (uint64_t)*(ptr8+5) << 40;
+        break;
+    case 7:
+        into = *ptr32 | (uint64_t)*(ptr8+4) << 32 | (uint64_t)*(ptr8+5) << 40 | (uint64_t)*(ptr8+6) << 48;
+        break;
+    }
+
+    return into;
+}
+
 #endif//__ANEMONE_TWIDDLE_H

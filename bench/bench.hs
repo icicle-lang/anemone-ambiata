@@ -76,13 +76,14 @@ bench_memcmp
  where
   go_all nm f
    = bgroup nm
-   [ bench "4" $ check2 f 4
-   , bench "8" $ check2 f 8
-   , bench "16" $ check2 f 16
-   , bench "32" $ check2 f 32
-   , bench "64" $ check2 f 64
-   , bench "128" $ check2 f 128
-   , bench "256" $ check2 f 256
+   -- Don't use round numbers because we want to test the leftovers in memcmp64
+   [ bench "5"  $ check2 f 5
+   , bench "10" $ check2 f 10
+   , bench "20" $ check2 f 20
+   , bench "40" $ check2 f 40
+   , bench "80" $ check2 f 80
+   , bench "160" $ check2 f 160
+   , bench "320" $ check2 f 320
    ]
 
   check2 f n
