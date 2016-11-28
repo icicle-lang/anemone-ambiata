@@ -85,7 +85,7 @@ ANEMONE_INLINE
 int anemone_memcmp64 (const void *as, const void *bs, size_t len)
 {
     uint64_t rem = len;
-    while (rem > 8) {
+    while (rem >= 8) {
         uint64_t a = *(uint64_t*)as;
         uint64_t b = *(uint64_t*)bs;
 
@@ -105,29 +105,42 @@ int anemone_memcmp64 (const void *as, const void *bs, size_t len)
         bs += 8;
     }
 
-    if (rem == 0)
-        return 0;
+    uint8_t *a8 = (uint8_t*)as;
+    uint8_t *b8 = (uint8_t*)bs;
 
-    uint64_t a = anemone_bswap64 (anemone_partial_load64 (as, rem) );
-    uint64_t b = anemone_bswap64 (anemone_partial_load64 (bs, rem) );
-    if (a == b)
-       return 0;
-    else if (a > b)
-       return 1;
-    else return -1;
+    int diff;
 
-    /* We lose the "magnitude" of the difference by doing these comparisons.
-     * We cannot directly return (a - b) because we end up with overflow issues.
-     * Perhaps something like this would be possible:
-     * By separating into 32-bits and comparing, we avoid overflow
-
-        int64_t diff1 = (a >> 4) - (b >> 4);
-        int64_t diff2 = (a & 0x00000000FFFFFFFF) - (a & 0x00000000FFFFFFFF);
-        if (diff1) {
-          return diff1;
-        }
-        return diff2;
-    */
+    switch (rem) {
+    case 7:
+        diff = *a8 - *b8;
+        if (diff) return diff;
+        a8++; b8++;
+    case 6:
+        diff = *a8 - *b8;
+        if (diff) return diff;
+        a8++; b8++;
+    case 5:
+        diff = *a8 - *b8;
+        if (diff) return diff;
+        a8++; b8++;
+    case 4:
+        diff = *a8 - *b8;
+        if (diff) return diff;
+        a8++; b8++;
+    case 3:
+        diff = *a8 - *b8;
+        if (diff) return diff;
+        a8++; b8++;
+    case 2:
+        diff = *a8 - *b8;
+        if (diff) return diff;
+        a8++; b8++;
+    case 1:
+        diff = *a8 - *b8;
+        if (diff) return diff;
+        a8++; b8++;
+    }
+    return 0;
 }
 
 ANEMONE_INLINE
@@ -197,7 +210,7 @@ int anemone_memeq64 (const void *as, const void *bs, size_t len)
 {
     /* Very similar to memcmp64, but don't endian swap */
     uint64_t rem = len;
-    while (rem > 8) {
+    while (rem >= 8) {
         int64_t a = *(uint64_t*)as;
         int64_t b = *(uint64_t*)bs;
         if (a != b) {
@@ -212,15 +225,42 @@ int anemone_memeq64 (const void *as, const void *bs, size_t len)
         bs += 8;
     }
 
-    if (rem == 0)
-        return 0;
+    uint8_t *a8 = (uint8_t*)as;
+    uint8_t *b8 = (uint8_t*)bs;
 
-    int64_t a = anemone_partial_load64 (as, rem);
-    int64_t b = anemone_partial_load64 (bs, rem);
-    if (a != b)
-      return 1;
-    else
-      return 0;
+    int diff;
+
+    switch (rem) {
+    case 7:
+        diff = *a8 - *b8;
+        if (diff) return diff;
+        a8++; b8++;
+    case 6:
+        diff = *a8 - *b8;
+        if (diff) return diff;
+        a8++; b8++;
+    case 5:
+        diff = *a8 - *b8;
+        if (diff) return diff;
+        a8++; b8++;
+    case 4:
+        diff = *a8 - *b8;
+        if (diff) return diff;
+        a8++; b8++;
+    case 3:
+        diff = *a8 - *b8;
+        if (diff) return diff;
+        a8++; b8++;
+    case 2:
+        diff = *a8 - *b8;
+        if (diff) return diff;
+        a8++; b8++;
+    case 1:
+        diff = *a8 - *b8;
+        if (diff) return diff;
+        a8++; b8++;
+    }
+    return 0;
 }
 
 ANEMONE_INLINE
