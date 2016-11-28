@@ -1,7 +1,16 @@
 #ifndef __ANEMONE_TWIDDLE_H
 #define __ANEMONE_TWIDDLE_H
 
+/* Anemone bit twiddling functions.
+ * These are some fairly boring functions that can come in handy.
+ * They aren't likely to be useful generally, which is why they aren't exposed to Haskell.
+ */
+
+
 #include "anemone_base.h"
+
+/* Byte and endian swapping
+ */
 
 ANEMONE_INLINE
 uint16_t anemone_bswap16 (uint16_t x)
@@ -21,6 +30,14 @@ uint64_t anemone_bswap64 (uint64_t x)
     return __builtin_bswap64(x);
 }
 
+
+/* Loading and masking.
+   When you have a uint8 buffer you don't want to read past the end of.
+ */
+
+/* If you only want the first <8 bytes of a buffer but still want a single load, use this mask.
+ * This is only safe if you own the memory past the end of the buffer and know it won't segfault.
+ */
 ANEMONE_INLINE
 uint64_t anemone_remainder_mask64 (uint64_t remainder)
 {
@@ -47,6 +64,9 @@ uint64_t anemone_remainder_mask64 (uint64_t remainder)
     return 0x0000000000000000;
 }
 
+/* Load the first <=8 bytes of a buffer into a 64-bit word.
+ * This is safe, in contrast to loading and masking above.
+ */
 ANEMONE_INLINE
 uint64_t anemone_partial_load64 (const void *ptr, size_t len)
 {
