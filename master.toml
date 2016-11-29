@@ -22,4 +22,3 @@
 [build.branches-8-0]
   GHC_VERSION = "8.0.1"
   CABAL_VERSION = "1.24.0.0"
-  BENCH = "true"
