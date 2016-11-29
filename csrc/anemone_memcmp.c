@@ -1,4 +1,5 @@
 #include "anemone_memcmp.h"
+#include "anemone_memcmp_zoo.h"
 
 int hs_anemone_memcmp8 (const void *as, const void *bs, size_t len)
 {
@@ -10,9 +11,14 @@ int hs_anemone_memcmp64 (const void *as, const void *bs, size_t len)
     return anemone_memcmp64 (as, bs, len);
 }
 
-int hs_anemone_memcmp128 (const void *as, const void *bs, size_t len)
+int hs_anemone_memcmp_partial_load64 (const void *as, const void *bs, size_t len)
 {
-    return anemone_memcmp128 (as, bs, len);
+    return anemone_memcmp_partial_load64 (as, bs, len);
+}
+
+int hs_anemone_memcmp128_unsafe (const void *as, const void *bs, size_t len)
+{
+    return anemone_memcmp128_unsafe (as, bs, len);
 }
 
 int hs_anemone_memcmp (const void *as, const void *bs, size_t len)
@@ -20,22 +26,3 @@ int hs_anemone_memcmp (const void *as, const void *bs, size_t len)
     return anemone_memcmp (as, bs, len);
 }
 
-int hs_anemone_memeq8 (const void *as, const void *bs, size_t len)
-{
-    return anemone_memeq8 (as, bs, len);
-}
-
-int hs_anemone_memeq64 (const void *as, const void *bs, size_t len)
-{
-    return anemone_memeq64 (as, bs, len);
-}
-
-int hs_anemone_memeq128 (const void *as, const void *bs, size_t len)
-{
-    return anemone_memeq128 (as, bs, len);
-}
-
-int hs_anemone_memeq (const void *as, const void* bs, size_t len)
-{
-    return anemone_memeq (as, bs, len);
-}
