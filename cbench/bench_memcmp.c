@@ -19,7 +19,7 @@ const char* rubbish
    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
    "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-#define NUM_BENCHES 1000000
+#define NUM_BENCHES 10000000
 #define MKBENCH(memcmp_f)                                           \
 int64_t memcmp_f##_simple_bench (uint64_t len)                      \
 {                                                                   \
@@ -40,7 +40,17 @@ int64_t memcmp_f##_regs_bench (uint64_t len)                        \
     const uint64_t mod_by = strlen(rubbish) - len;                  \
     uint64_t as = 0;                                                \
     uint64_t bs = 1;                                                \
-    uint64_t c, d, e, f, g, h,    j, k, l, m, n = 0;                \
+    uint64_t c = 0;                                                 \
+    uint64_t d = 0;                                                 \
+    uint64_t e = 0;                                                 \
+    uint64_t f = 0;                                                 \
+    uint64_t g = 0;                                                 \
+    uint64_t h = 0;                                                 \
+    uint64_t j = 0;                                                 \
+    uint64_t k = 0;                                                 \
+    uint64_t l = 0;                                                 \
+    uint64_t m = 0;                                                 \
+    uint64_t n = 0;                                                 \
     int64_t ret = 0;                                                \
     for (uint64_t i = 0; i != NUM_BENCHES; ++i) {                   \
         ret += memcmp_f(rubbish+as, rubbish+bs, len);               \
