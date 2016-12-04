@@ -18,7 +18,7 @@ import           Data.ByteString (ByteString)
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as Char8
 import           Data.Hashable (hash)
-import           Data.Thyme (Day)
+import           Data.Thyme (Day, YearMonthDay)
 import qualified Data.Thyme.Format as Thyme
 
 import           System.IO (IO)
@@ -151,18 +151,30 @@ bench_hash
 
 bench_time :: Benchmark
 bench_time
- = bgroup "String to Day"
- [ go_all "Anemone.parseDate" (fmap fst . FoTime.parseDate)
- , go_all "Thyme.parseTime" thyme
+ = bgroup "Date Parsing"
+ [ go_all "Anemone.parseDay" (fmap fst . FoTime.parseDay)
+ , go_all "Anemone.parseYearMonthDay" (fmap fst . FoTime.parseYearMonthDay)
+ , go_all "Thyme.parseTime :: Day" thymeDay
+ , go_all "Thyme.parseTime :: YearMonthDay" thymeYearMonthDay
  ]
 
  where
-  go_all nm (f :: ByteString -> Maybe Day)
+  go_all nm (f :: ByteString -> Either x a)
    = bgroup nm
    $ fmap (\str -> bench (Char8.unpack str) $ nf f str)
-   [ "2016-12-31"
+   [ "2016-12-01"
+   , "2016-02-28"
+   , "2016-02-29"
+   , "2016-03-31"
+   , "2016-00-00"
    ]
 
-  thyme :: ByteString -> Maybe Day
-  thyme
-   = Thyme.parseTime defaultTimeLocale "%Y-%m-%d" . Char8.unpack
+  thymeDay :: ByteString -> Either () Day
+  thymeDay
+   = maybe (Left ()) Right
+   . Thyme.parseTime defaultTimeLocale "%Y-%m-%d" . Char8.unpack
+
+  thymeYearMonthDay :: ByteString -> Either () YearMonthDay
+  thymeYearMonthDay
+   = maybe (Left ()) Right
+   . Thyme.parseTime defaultTimeLocale "%Y-%m-%d" . Char8.unpack
