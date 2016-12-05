@@ -60,6 +60,7 @@ library
                        anemone_ffi.h
                        anemone_hash.h
                        anemone_memcmp.h
+                       anemone_memcmp_zoo.h
                        anemone_mempool.h
                        anemone_pack.h
                        anemone_sse.h
@@ -74,6 +75,7 @@ library
                        anemone_ffi.h
                        anemone_hash.h
                        anemone_memcmp.h
+                       anemone_memcmp_zoo.h
                        anemone_mempool.h
                        anemone_pack.h
                        anemone_sse.h

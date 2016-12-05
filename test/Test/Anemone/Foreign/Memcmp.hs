@@ -5,7 +5,6 @@
 
 module Test.Anemone.Foreign.Memcmp where
 
-import qualified  Anemone.Foreign.Memcmp.Base   as Base
 import qualified  Anemone.Foreign.Memcmp.Export as Export
 
 import            P
@@ -15,48 +14,33 @@ import            Test.QuickCheck.Instances()
 
 import qualified  Data.ByteString as B
 
-testCmp'  :: (Eq a, Show a)
-          => (B.ByteString -> B.ByteString -> a)
-          -> (B.ByteString -> B.ByteString -> a)
+testCmp   :: (B.ByteString -> B.ByteString -> Ordering)
           -> B.ByteString -> B.ByteString -> B.ByteString -> Property
-testCmp' good check prefix a b
+testCmp check prefix a b
  = let a' = pad a
        b' = pad b
        a'' = prefix <> a'
        b'' = prefix <> b'
    in  counterexample (show (a',b'))
-       ( good a' b' === check a' b')
+       ( compare a' b' === check a' b')
        -- Testing with an equal same prefix makes it more likely to hit weird cases
   .&&. counterexample (show (a'',b''))
-       ( good a'' b'' === check a'' b'')
+       ( compare a'' b'' === check a'' b'')
  where
   len = min (B.length a) (B.length b)
   pad x = B.take len x
 
-
-testCmp :: Base.MemcmpT -> B.ByteString -> B.ByteString -> B.ByteString -> Property
-testCmp = testCmp' compare
-
-testEq :: Base.MemeqT -> B.ByteString -> B.ByteString -> B.ByteString -> Property
-testEq = testCmp' (==)
+prop_memcmp
+ = testCmp Export.memcmp
 
 prop_memcmp8
  = testCmp Export.memcmp8
 prop_memcmp64
  = testCmp Export.memcmp64
-prop_memcmp128
- = testCmp Export.memcmp128
-prop_memcmp
- = testCmp Export.memcmp
-
-prop_memeq8
- = testEq Export.memeq8
-prop_memeq64
- = testEq Export.memeq64
-prop_memeq128
- = testEq Export.memeq128
-prop_memeq
- = testEq Export.memeq
+prop_memcmp128_unsafe
+ = testCmp Export.memcmp128_unsafe
+prop_memcmp_partial_load64
+ = testCmp Export.memcmp_partial_load64
 
 
 return []

@@ -60,29 +60,30 @@ bench_ffi
 bench_memcmp :: Benchmark
 bench_memcmp
  = bgroup "Memory comparisons"
- [ bgroup "Ordered compare"
-     [ go_all "memcmp8"             FoMemcmp.memcmp8_bench
-     , go_all "memcmp64"            FoMemcmp.memcmp64_bench
-     , go_all "memcmp128"           FoMemcmp.memcmp128_bench
-     , go_all "memcmp std"          FoMemcmp.memcmp_std_bench
+ [ bgroup "Simple bench"
+     [ go_all "memcmp8"                 FoMemcmp.memcmp8_simple_bench
+     , go_all "memcmp64"                FoMemcmp.memcmp64_simple_bench
+     , go_all "memcmp128"               FoMemcmp.memcmp128_unsafe_simple_bench
+     , go_all "memcmp_partial_load64"   FoMemcmp.memcmp_partial_load64_simple_bench
+     , go_all "memcmp std"              FoMemcmp.memcmp_std_simple_bench
      ]
- , bgroup "Equality compare"
-     [ go_all "memeq8"                  FoMemcmp.memeq8_bench
-     , go_all "memeq64"                 FoMemcmp.memeq64_bench
-     , go_all "memeq128"                FoMemcmp.memeq128_bench
+ , bgroup "Register pressure"
+     [ go_all "memcmp8"                 FoMemcmp.memcmp8_regs_bench
+     , go_all "memcmp64"                FoMemcmp.memcmp64_regs_bench
+     , go_all "memcmp128"               FoMemcmp.memcmp128_unsafe_regs_bench
+     , go_all "memcmp_partial_load64"   FoMemcmp.memcmp_partial_load64_regs_bench
+     , go_all "memcmp std"              FoMemcmp.memcmp_std_regs_bench
      ]
- ]
+  ]
 
  where
   go_all nm f
    = bgroup nm
-   [ bench "4" $ check2 f 4
-   , bench "8" $ check2 f 8
-   , bench "16" $ check2 f 16
-   , bench "32" $ check2 f 32
-   , bench "64" $ check2 f 64
-   , bench "128" $ check2 f 128
-   , bench "256" $ check2 f 256
+   -- Don't use round numbers because we want to test the leftovers in memcmp64
+   [ bench "5"  $ check2 f 5
+   , bench "10" $ check2 f 10
+   , bench "40" $ check2 f 40
+   , bench "160" $ check2 f 160
    ]
 
   check2 f n
