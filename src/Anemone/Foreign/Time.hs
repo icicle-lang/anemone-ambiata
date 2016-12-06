@@ -13,8 +13,6 @@ module Anemone.Foreign.Time (
   , parseYearMonthDay
   ) where
 
-import           Anemone.Foreign.Data
-
 import           Data.Bits ((.&.), shiftR)
 import qualified Data.ByteString as B
 import           Data.ByteString.Internal (ByteString(..))
@@ -59,26 +57,27 @@ renderTimeError = \case
 
 parseDay :: ByteString -> Either TimeError (Day, ByteString)
 parseDay bs@(PS fp off len) =
-  unsafePerformIO . withForeignPtr fp $ \p0 -> do
-    let
-      !p =
-        p0 `plusPtr` off
+  let
+    !result =
+      unsafePerformIO . withForeignPtr fp $ \p0 ->
+        let
+          !p =
+            p0 `plusPtr` off
 
-      !pe =
-        p `plusPtr` len
+          !pe =
+            p `plusPtr` len
+        in
+          c_parse_gregorian_as_modified_julian p pe
 
-    !result <- c_parse_gregorian_as_modified_julian p pe
+    !mjd =
+      fromIntegral $ (result .&. 0xFFFFFFFF00000000) `shiftAR` 32
 
-    let
-      !mjd =
-        fromIntegral $ (result .&. 0xFFFFFFFF00000000) `shiftAR` 32
-
-      !err =
-        fromIntegral $ (result .&. 0x00000000FFFFFFFF) :: CError
-
+    !err =
+      result .&. 0x00000000FFFFFFFF
+  in
     case err of
       0 -> do
-        pure $ Right (ModifiedJulianDay mjd, PS fp (off + 10) (len - 10))
+        Right (ModifiedJulianDay mjd, PS fp (off + 10) (len - 10))
       1 ->
         let
           -- if we get an invalid date error, then the payload is the y/m/d
@@ -91,42 +90,45 @@ parseDay bs@(PS fp off len) =
           !day =
             fromIntegral $ (result .&. 0x000000FF00000000) `shiftR` 32
         in
-          pure . Left $ TimeInvalidDate (YearMonthDay year month day)
+          Left $ TimeInvalidDate (YearMonthDay year month day)
       _ ->
-        pure . Left $ TimeParseError bs
+        Left $ TimeParseError bs
+{-# INLINE parseDay #-}
 
 parseYearMonthDay :: ByteString -> Either TimeError (YearMonthDay, ByteString)
 parseYearMonthDay bs@(PS fp off len) =
-  unsafePerformIO . withForeignPtr fp $ \p0 -> do
-    let
-      !p =
-        p0 `plusPtr` off
+  let
+    !result =
+      unsafePerformIO . withForeignPtr fp $ \p0 ->
+        let
+          !p =
+            p0 `plusPtr` off
 
-      !pe =
-        p `plusPtr` len
+          !pe =
+            p `plusPtr` len
+        in
+          c_parse_gregorian p pe
 
-    !result <- c_parse_gregorian p pe
+    !year =
+      fromIntegral $ (result .&. 0xFFFF000000000000) `shiftR` 48
 
-    let
-      !year =
-        fromIntegral $ (result .&. 0xFFFF000000000000) `shiftR` 48
+    !month =
+      fromIntegral $ (result .&. 0x0000FF0000000000) `shiftR` 40
 
-      !month =
-        fromIntegral $ (result .&. 0x0000FF0000000000) `shiftR` 40
+    !day =
+      fromIntegral $ (result .&. 0x000000FF00000000) `shiftR` 32
 
-      !day =
-        fromIntegral $ (result .&. 0x000000FF00000000) `shiftR` 32
-
-      !err =
-        fromIntegral $ (result .&. 0x00000000FFFFFFFF) :: CError
-
+    !err =
+      (result .&. 0x00000000FFFFFFFF)
+  in
     case err of
       0 -> do
-        pure $ Right (YearMonthDay year month day, PS fp (off + 10) (len - 10))
+        Right (YearMonthDay year month day, PS fp (off + 10) (len - 10))
       1 ->
-        pure . Left $ TimeInvalidDate (YearMonthDay year month day)
+        Left $ TimeInvalidDate (YearMonthDay year month day)
       _ ->
-        pure . Left $ TimeParseError bs
+        Left $ TimeParseError bs
+{-# INLINE parseYearMonthDay #-}
 
 -- | Do an arithmetic right shift on a 'Word64' (i.e. maintain the sign bit)
 shiftAR :: Word64 -> Int -> Int64
