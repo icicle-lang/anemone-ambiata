@@ -8,7 +8,7 @@ This is a very simple library that packages up the C functions, allowing you to 
 
 ## Linking and header files
 All the header files are marked as `install-includes`, which makes them available from the C code in other Cabal projects.
-The library will also be linked in automatically by Cabal
+The library will also be linked in automatically by Cabal.
 When using from another project's cbits, one can `#include` the files and use the functions as normal.
 
 For example, to use the SSE int parser:
