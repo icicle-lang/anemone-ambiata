@@ -4,6 +4,7 @@
 
 #if ANEMONE_MEMPOOL_DEBUG
 #include <stdio.h>
+#include <inttypes.h>
 #define ANEMONE_MEMPOOL_WHEN_DEBUG(f) f
 #else
 #define ANEMONE_MEMPOOL_WHEN_DEBUG(f)
@@ -26,6 +27,7 @@ typedef struct anemone_block {
 typedef struct {
   // last != 0
   anemone_block_t *last;
+  int64_t   total_alloc_size;
   // last->ptr <= current_ptr < maximum_ptr */
   void     *current_ptr;
   // maxmimum_ptr - last->ptr >= anemone_block_size

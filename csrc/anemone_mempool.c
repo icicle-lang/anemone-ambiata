@@ -11,7 +11,7 @@ anemone_block_t * anemone_block_create (anemone_block_t *prev, size_t num_bytes)
   anemone_block_t *dst = malloc (sizeof (anemone_block_t));
   memcpy (dst, &src, sizeof (anemone_block_t));
 
-  ANEMONE_MEMPOOL_WHEN_DEBUG(fprintf (stderr, "iblock_create: %p\n", dst->ptr));
+  ANEMONE_MEMPOOL_WHEN_DEBUG(fprintf (stderr, "anemone_block_create: %p\n", dst->ptr));
 
   return dst;
 }
@@ -22,7 +22,7 @@ void anemone_block_free (anemone_block_t *block)
 {
   if (block == NULL) return;
 
-  ANEMONE_MEMPOOL_WHEN_DEBUG(fprintf (stderr, "iblock_free: %p\n", block->ptr));
+  ANEMONE_MEMPOOL_WHEN_DEBUG(fprintf (stderr, "anemone_block_free: %p\n", block->ptr));
 
   free (block->ptr);
   anemone_block_t *prev = block->prev;
@@ -36,9 +36,12 @@ void anemone_mempool_add_block (anemone_mempool_t *pool)
 {
   anemone_block_t *next = anemone_block_create (pool->last, anemone_block_size);
 
+  pool->total_alloc_size += anemone_block_size;
   pool->last        = next;
   pool->current_ptr = next->ptr;
   pool->maximum_ptr = next->ptr + anemone_block_size;
+
+  ANEMONE_MEMPOOL_WHEN_DEBUG(fprintf (stderr, "anemone_mempool_add_block: total_alloc_size: %" PRId64 "\n", pool->total_alloc_size));
 }
 
 // Allocate a new block after initial bump allocation has failed.
@@ -65,8 +68,12 @@ void * anemone_mempool_alloc_block (anemone_mempool_t *pool, size_t num_bytes)
     anemone_block_t *prev = last->prev;
     // Create a new block that points to the previous block
     anemone_block_t *inject = anemone_block_create (prev, num_bytes);
+    pool->total_alloc_size += num_bytes;
     // and replace current previous with our new one
     last->prev = inject;
+
+    ANEMONE_MEMPOOL_WHEN_DEBUG(fprintf (stderr, "anemone_mempool_alloc_block: total_alloc_size: %" PRId64 "\n", pool->total_alloc_size));
+
     return inject->ptr;
   }
 }
@@ -89,6 +96,7 @@ void * hs_anemone_mempool_calloc (anemone_mempool_t *pool, size_t num_items, siz
 anemone_mempool_t * anemone_mempool_create ()
 {
   anemone_mempool_t *pool = calloc(1, sizeof(anemone_mempool_t));
+  pool->total_alloc_size = 0;
 
   ANEMONE_MEMPOOL_WHEN_DEBUG(fprintf (stderr, "anemone_mempool_create: %p\n", pool));
 
