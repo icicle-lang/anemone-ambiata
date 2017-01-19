@@ -34,11 +34,23 @@ foreign import ccall unsafe
     test_mempool_nonoverlap
     :: CInt -> CSize -> CBool
 
+foreign import ccall unsafe
+    test_mempool_size
+    :: CInt -> CSize -> CBool
+
+
 prop_mempool_nonoverlap :: Property
 prop_mempool_nonoverlap
  = forAll iterations $ \a ->
    forAll megabytes $ \b ->
    test_mempool_nonoverlap a b /= 0
+
+
+prop_mempool_track_size :: Property
+prop_mempool_track_size
+ = forAll iterations $ \a ->
+   forAll megabytes $ \b ->
+   test_mempool_size a b /= 0
 
 -- Really simple sanity test of the FFI
 -- Create a pool, allocate a whole bunch of pointers and make sure the pointers are distinct

@@ -125,3 +125,38 @@ bool_t test_mempool_nonoverlap(uint64_t iterations, size_t max_bytes)
   return 1;
 }
 
+// Test that the memory pool keeps track of allocated size
+// It won't be exactly the same as iterations*bytes since we are packing into blocks
+bool_t test_mempool_size(uint64_t iterations, size_t bytes)
+{
+  anemone_mempool_t *pool = anemone_mempool_create();
+
+  // Allocate a bunch of pointers and throw them away
+  for (uint64_t i = 0; i != iterations; ++i) {
+    anemone_mempool_alloc(pool, bytes);
+  }
+
+  int64_t allocated = pool->total_alloc_size;
+
+  // Best case: allocate the bare minimum.
+  int64_t min_allocated = iterations * bytes;
+  // Worst case is where we have to make a whole block for each allocation, where most of that is wasted. 
+  // This would happen if bytes == (block_size / 2) + 1.
+  // In that case we waste a bit under half a block for every iteration, so:
+  // Plus a single block for the initial case where nothing is generated
+  int64_t max_allocated = min_allocated + (iterations * anemone_block_size / 2) + anemone_block_size;
+
+  if (allocated < min_allocated) {
+    fprintf (stderr, "the memory pool allocated less than it should have.\n\tallocated=%" PRId64 "\n\tmin_allocated=%" PRId64 "\n\tmax_allocated=%" PRId64 "\n",
+        allocated, min_allocated, max_allocated);
+    return 0;
+  } else if (allocated > max_allocated) {
+    fprintf (stderr, "the memory pool allocated more than it should have.\n\tallocated=%" PRId64 "\n\tmin_allocated=%" PRId64 "\n\tmax_allocated=%" PRId64 "\n",
+        allocated, min_allocated, max_allocated);
+    return 0;
+  }
+
+  anemone_mempool_free(pool);
+
+  return 1;
+}
