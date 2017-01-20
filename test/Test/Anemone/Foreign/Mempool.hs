@@ -77,6 +77,18 @@ prop_mempool_calloc
     Mempool.free pool
     return (vals === List.replicate num_items (CInt 0))
 
+-- Really simple sanity test of the FFI: make sure totalAllocSize returns something,
+-- but don't really care what since prop_mempool_track_size checks the value
+prop_mempool_sanity_total_alloc :: Property
+prop_mempool_sanity_total_alloc
+ = forAll megabytes $ \sizeToAlloc ->
+   testIO $ do
+    pool <- Mempool.create
+    _ <- Mempool.allocBytes pool sizeToAlloc
+    poolSize <- Mempool.totalAllocSize pool
+    Mempool.free pool
+    return (poolSize >= fromIntegral sizeToAlloc)
+
 
 iterations :: Gen CInt
 iterations = choose (1, 100)

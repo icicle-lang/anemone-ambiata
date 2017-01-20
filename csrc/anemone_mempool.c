@@ -131,3 +131,10 @@ void anemone_mempool_free (anemone_mempool_t *pool)
   anemone_block_free (pool->last);
   free(pool);
 }
+
+// Get the total alloc size - this is only necessary for calling from Haskell
+int64_t anemone_mempool_total_alloc_size (anemone_mempool_t *pool)
+{
+  return pool->total_alloc_size;
+}
+
