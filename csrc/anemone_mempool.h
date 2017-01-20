@@ -75,4 +75,6 @@ void * anemone_mempool_calloc (anemone_mempool_t *pool, size_t num_items, size_t
     return ret;
 }
 
+// Get the total alloc size - this is only necessary for calling from Haskell
+int64_t anemone_mempool_total_alloc_size (anemone_mempool_t *pool);
 

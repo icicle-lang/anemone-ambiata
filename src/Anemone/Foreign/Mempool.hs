@@ -9,6 +9,7 @@ module Anemone.Foreign.Mempool (
   , calloc
   , callocBytes
   , free
+  , totalAllocSize
   ) where
 
 import           Foreign.C.Types ( CSize(..) )
@@ -43,6 +44,9 @@ foreign import ccall unsafe "hs_anemone_mempool_calloc"
 foreign import ccall unsafe "anemone_mempool_free"
   free :: Mempool -> IO ()
 
+foreign import ccall unsafe "anemone_mempool_total_alloc_size"
+  totalAllocSize :: Mempool -> IO Int64
+
 alloc :: forall a. Storable a => Mempool -> IO (Ptr a)
 alloc mp =
   allocBytes mp (fromIntegral $ sizeOf (Savage.undefined :: a))
@@ -50,5 +54,4 @@ alloc mp =
 calloc :: forall a. Storable a => Mempool -> CSize -> IO (Ptr a)
 calloc mp i =
   callocBytes mp i (fromIntegral $ sizeOf (Savage.undefined :: a))
-
 
