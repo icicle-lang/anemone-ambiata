@@ -26,7 +26,7 @@ error_t anemone_string_to_i64 (char **pp, char *pe, int64_t *output_ptr)
     if (digits == 0)
         return 1;
 
-    int64_t value = 0;
+    uint64_t value = 0;
 
     /* handle up to 19 digits, assume we're 64-bit */
     switch (digits) {
@@ -50,8 +50,14 @@ error_t anemone_string_to_i64 (char **pp, char *pe, int64_t *output_ptr)
         case  2:  value += (p[digits- 2] - '0') * 10LL;
         case  1:  value += (p[digits- 1] - '0');
         /* ^ fall through */
-            value *= sign;
-            *output_ptr = value;
+            if (sign == 1 && value > INT64_MAX) {
+              return 1;
+            } else if (sign == -1 && value > (uint64_t)INT64_MAX + 1) {
+              return 1;
+            }
+
+            int64_t value_signed = value * sign;
+            *output_ptr = value_signed;
             *pp += digits + sign_size;
             return 0;
 

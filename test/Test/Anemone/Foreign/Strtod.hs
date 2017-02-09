@@ -56,7 +56,7 @@ withSegv' f a
  = testIO $ Segv.withSegv (show a) (return $ f a)
 
 prop_strtod_on_ints
- = withSegv' 
+ = withSegv'
  $ testStrtodOnInts
 
 
@@ -67,12 +67,49 @@ testStrtodWellformed a
    in (r ~~~ strtod bs)
 
 prop_strtod_wellformed
- = forAll genWellformed
- $ withSegv' 
+ = forAll (genWellformed 19 19 19)
+ $ withSegv'
  $ testStrtodWellformed
 
-prop_strtod_double :: Double -> Property
-prop_strtod_double
+prop_strtod_length_20_1_1
+ = forAll (genWellformed 20 1 1)
+ $ withSegv'
+ $ testStrtodWellformed
+
+prop_strtod_length_1_20_1
+ = forAll (genWellformed 1 20 1)
+ $ withSegv'
+ $ testStrtodWellformed
+
+prop_strtod_length_20_20_3
+ = forAll (genWellformed 20 20 3)
+ $ withSegv'
+ $ testStrtodWellformed
+
+prop_strtod_length_40_1_1
+ = forAll (genWellformed 40 1 1)
+ $ withSegv'
+ $ testStrtodWellformed
+
+prop_strtod_length_1_40_1
+ = forAll (genWellformed 1 40 1)
+ $ withSegv'
+ $ testStrtodWellformed
+
+prop_strtod_length_40_40_3
+ = forAll (genWellformed 40 40 3)
+ $ withSegv'
+ $ testStrtodWellformed
+
+prop_strtod_length_80_80_10
+ = forAll (genWellformed 80 80 10)
+ $ withSegv'
+ $ testStrtodWellformed
+
+
+
+zprop_strtod_double :: Double -> Property
+zprop_strtod_double
  = withSegv' (testStrtodWellformed . show)
 
 -- strtod cannot parse all things that read can.
@@ -85,8 +122,8 @@ prop_strtod_double
 -- > λ strtodPadded  "12345678901234567890"
 -- > Nothing
 --
-genWellformed :: Gen [Char]
-genWellformed
+genWellformed :: Int -> Int -> Int -> Gen [Char]
+genWellformed num_int num_frac num_exp
  = oneof [int, float]
  where
   num i
@@ -94,17 +131,17 @@ genWellformed
         vectorOf i' (elements ['0'..'9'])
 
   int
-   = do i <- num 19
+   = do i <- num num_int
         e <- expo
         return (i <> e)
 
   float
-   = do i <- num 19
-        f <- num 19
+   = do i <- num num_int
+        f <- num num_frac
         e <- expo
         return (i <> "." <> f <> e)
   expo
-   = oneof [(("e" <>) <$> num 3), return ""]
+   = oneof [(("e" <>) <$> num num_exp), return ""]
 
 return []
 tests = $disorderCheckEnvAll TestRunMore

@@ -145,12 +145,12 @@ error_t anemone_strtod (char **pp, char *pe, double *output_ptr)
 
     char *ps_int_part = p;
     uint64_t int_part;
-    error_t error = anemone_string_to_ui64_v128 (&p, pe, &int_part);
-    if (error) return error;
+    int64_t int_leftovers = anemone_string_to_ui64_v128_floating (&p, pe, &int_part);
+    if (int_leftovers < 0) return 1;
 
-    int int_part_digits = p - ps_int_part;
+    int int_part_digits = (p - ps_int_part) - int_leftovers;
 
-    int64_t exponent    = 0;
+    int64_t exponent    = int_leftovers;
     /* the significand must be unsigned to store largest 19-digit */
     uint64_t significand = int_part;
 
@@ -161,10 +161,10 @@ error_t anemone_strtod (char **pp, char *pe, double *output_ptr)
         char *ps = p;
 
         uint64_t frac_part;
-        error_t error = anemone_string_to_ui64_v128 (&p, pe, &frac_part);
-        if (error) return error;
+        int64_t frac_leftovers = anemone_string_to_ui64_v128_floating (&p, pe, &frac_part);
+        if (frac_leftovers < 0) return frac_leftovers;
 
-        int digits = p - ps;
+        int digits = (p - ps) - frac_leftovers;
 
         if (int_part_digits + digits > 19) {
           int num_over = (int_part_digits + digits) - 19;
@@ -190,16 +190,19 @@ error_t anemone_strtod (char **pp, char *pe, double *output_ptr)
             p++;
 
             uint64_t exp_part;
-            error_t error = anemone_string_to_ui64_v128 (&p, pe, &exp_part);
-            if (error) return error;
+            int64_t exp_leftovers = anemone_string_to_ui64_v128_floating (&p, pe, &exp_part);
+            /* it is unreasonable to handle exponent 20 digits or longer */
+            if (exp_leftovers) return 1;
+            if (exp_part > INT64_MAX) exp_part = INT64_MAX;
 
             exponent -= (int64_t)exp_part;
         } else {
             if (p[0] == '+') p++;
 
             uint64_t exp_part;
-            error_t error = anemone_string_to_ui64_v128 (&p, pe, &exp_part);
-            if (error) return error;
+            int64_t exp_leftovers = anemone_string_to_ui64_v128_floating (&p, pe, &exp_part);
+            if (exp_leftovers) return 1;
+            if (exp_part > INT64_MAX) exp_part = INT64_MAX;
 
             exponent += (int64_t)exp_part;
         }

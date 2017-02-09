@@ -54,18 +54,21 @@ uint64_t anemone_string_to_i64_v128_first_eight (const __m128i m, unsigned int i
 /*
   parse string to unsigned 64-bit integer.
   does not strip whitespace.
+  this does not allow the full range of uint64, instead only up to 10^19, which is a little above 2^63
+  the return value is 0 if successful parse, <0 on error, and >0 when the number won't fit in 10^19.
  */
-error_t anemone_string_to_ui64_v128 (char **pp, char *pe, uint64_t *out_val)
+int64_t anemone_string_to_ui64_v128_floating (char **pp, char *pe, uint64_t *out_val)
 {
     char* in = *pp;
     uint64_t buffer_size = pe - in;
     if (buffer_size == 0) {
-        return 1;
+        return -1;
     }
 
     __m128i m                = anemone_sse_load_bytes128(in, pe);
 
     unsigned int index       = anemone_sse_first_nondigit(m);
+    in                      += index;
     const __m128i zeros      = _mm_set1_epi8(48);
     m                        = _mm_subs_epi8(m, zeros);
 
@@ -75,8 +78,10 @@ error_t anemone_string_to_ui64_v128 (char **pp, char *pe, uint64_t *out_val)
     buffer_size -= index;
     uint64_t int_out         = anemone_string_to_i64_v128_first_eight(m, index);
 
+    uint64_t exponent_spill  = 0;
+
     if (ANEMONE_UNLIKELY(index == 0)) {
-        return 1;
+        return -1;
     }
     if (ANEMONE_UNLIKELY(index > 8)) {
         m                    = _mm_srli_si128(m, 8);
@@ -84,16 +89,25 @@ error_t anemone_string_to_ui64_v128 (char **pp, char *pe, uint64_t *out_val)
         const uint64_t mul2  = powers_of_ten[index - 8];
         int_out              = int_out * mul2 + i2;
 
+
         if (ANEMONE_UNLIKELY(index == 16)) {
-            in              += 16;
             m                = anemone_sse_load_bytes128(in, pe);
             index            = anemone_sse_first_nondigit(m);
+            in              += index;
             if (index > buffer_size) {
                 index = buffer_size;
             }
             buffer_size -= index;
-            if (ANEMONE_UNLIKELY(index > 3)) {
-                return 1;
+
+            if (index > 3) {
+                exponent_spill = index - 3;
+                while (index == 16) {
+                    __m128i throw = anemone_sse_load_bytes128(in, pe);
+                    index         = anemone_sse_first_nondigit(throw);
+                    in           += index;
+                    exponent_spill += index;
+                }
+                index = 3;
             }
 
             m                        = _mm_subs_epi8(m, zeros);
@@ -106,8 +120,26 @@ error_t anemone_string_to_ui64_v128 (char **pp, char *pe, uint64_t *out_val)
     }
 
     *out_val = int_out;
-    *pp      = in + index;
-    return 0;
+    *pp      = in;
+    return exponent_spill;
+}
+
+/*
+  parse unsigned 64-bit integer.
+ */
+ANEMONE_INLINE
+ANEMONE_STATIC
+error_t anemone_string_to_ui64_v128 (char **pp, char *pe, uint64_t *out_val)
+{
+    char* pp_ = *pp;
+    int64_t ret = anemone_string_to_ui64_v128_floating (&pp_, pe, out_val);
+
+    if (ret == 0) {
+        *pp = pp_;
+        return 0;
+    } else {
+        return 1;
+    }
 }
 
 /*
@@ -125,14 +157,21 @@ error_t anemone_string_to_i64_v128 (char **pp, char *pe, int64_t *out_val)
     int64_t sign             = 1;
 
     if (in[0] == '-') {
-        (*pp)++;
+        in++;
         sign                 = -1;
     }
     uint64_t int_out;
-    if (anemone_string_to_ui64_v128(pp, pe, &int_out)) {
+    if (anemone_string_to_ui64_v128(&in, pe, &int_out)) {
       return 1;
     }
 
+    if (ANEMONE_UNLIKELY(sign == 1 && int_out > INT64_MAX)) {
+        return 1;
+    } else if (ANEMONE_UNLIKELY(sign == -1 && int_out > (uint64_t)INT64_MAX + 1)) {
+        return 1;
+    }
+
+    *pp = in;
     *out_val = int_out * sign;
     return 0;
 }
