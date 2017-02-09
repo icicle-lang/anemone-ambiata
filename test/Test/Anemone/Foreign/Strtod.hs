@@ -19,6 +19,7 @@ import qualified  Data.ByteString       as B
 import qualified  Data.ByteString.Char8 as BC
 
 import Data.Char (isDigit)
+import Data.List (replicate)
 
 import qualified Text.Read          as Read
 
@@ -106,10 +107,15 @@ prop_strtod_length_80_80_10
  $ withSegv'
  $ testStrtodWellformed
 
+prop_strtod_length_20_20_3_zeroprefix
+ = forAll (genWellformed 20 20 3) $ \dbl ->
+   forAll (choose (0,20))         $ \zeros ->
+   withSegv' testStrtodWellformed (replicate zeros '0' <> dbl)
 
 
-zprop_strtod_double :: Double -> Property
-zprop_strtod_double
+
+prop_strtod_double :: Double -> Property
+prop_strtod_double
  = withSegv' (testStrtodWellformed . show)
 
 -- strtod cannot parse all things that read can.

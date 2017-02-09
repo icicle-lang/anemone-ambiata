@@ -114,6 +114,15 @@ error_t anemone_strtod (char **pp, char *pe, double *output_ptr)
         p++;
     }
 
+    /* leading zeros */
+    if (pe - p > 0 && p[0] == '0') {
+        do {
+            p++;
+        } while (pe - p > 0 && p[0] == '0');
+        p--;
+    }
+
+
     static const uint64_t to_lower      = 0x2020202020202020;
 
     static const size_t   infinity_size = 8;
