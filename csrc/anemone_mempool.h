@@ -10,6 +10,10 @@
 #define ANEMONE_MEMPOOL_WHEN_DEBUG(f)
 #endif
 
+// Officually, the documentation says that un-aligned SSE accesses require
+// 16 byte alignment, but testing suggests 8 byte alignment is sufficient.
+#define ANEMONE_ALIGNMENT   8
+
 static const size_t anemone_block_size = 1 * 1024 * 1024;
 
 // A single block containing some allocated data.
@@ -34,15 +38,27 @@ typedef struct {
   void     *maximum_ptr;
 } anemone_mempool_t;
 
+
+ANEMONE_INLINE
+size_t round_up_allocation (size_t num_bytes)
+{
+#if ANEMONE_ALIGNMENT == 8
+  return ((num_bytes + 7) >> 3) << 3;
+#else
+#error "Bad ANEMONE_ALIGNMENT value"
+#endif
+}
+
 /* This has to be a macro as when it's a function we end up with an extra
  * conditional because we need to return something to indicate whether we
  * succeeded or not. */
 #define ANEMONE_MEMPOOL_TRY_ALLOC(fn_name)                                                             \
   void *ptr  = pool->current_ptr;                                                                      \
-  void *next = ptr + num_bytes;                                                                        \
+  size_t num_bytes_rounded = round_up_allocation (num_bytes);                                          \
+  void *next = ptr + num_bytes_rounded;                                                                \
                                                                                                        \
   if (next <= pool->maximum_ptr) {                                                                     \
-    ANEMONE_MEMPOOL_WHEN_DEBUG(fprintf (stderr, #fn_name ": %p (allocated %zu bytes)\n", ptr, num_bytes)); \
+    ANEMONE_MEMPOOL_WHEN_DEBUG(fprintf (stderr, #fn_name ": %p (allocated %zu bytes)\n", ptr, num_bytes_rounded)); \
     pool->current_ptr = next;                                                                          \
     return ptr;                                                                                        \
   }

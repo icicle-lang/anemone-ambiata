@@ -1,11 +1,12 @@
 #include "anemone_mempool.h"
 #include <string.h>
+#include <malloc.h>
 
 // Allocate a new block with given predecessor 
 ANEMONE_STATIC
 anemone_block_t * anemone_block_create (anemone_block_t *prev, size_t num_bytes)
 {
-  void     *ptr = malloc (num_bytes);
+  void     *ptr = memalign(ANEMONE_ALIGNMENT, num_bytes);
   anemone_block_t  src = { ptr, prev };
 
   anemone_block_t *dst = malloc (sizeof (anemone_block_t));
