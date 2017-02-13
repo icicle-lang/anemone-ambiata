@@ -52,6 +52,7 @@ prop_mempool_track_size
    forAll megabytes $ \b ->
    test_mempool_size a b /= 0
 
+
 -- Really simple sanity test of the FFI
 -- Create a pool, allocate a whole bunch of pointers and make sure the pointers are distinct
 prop_mempool_sanity :: Property
@@ -64,6 +65,20 @@ prop_mempool_sanity
     -- If all pointers are distinct, length of uniques should be same as original length
     let uniqs = List.nub vals
     return (counterexample (show vals) $ length vals === length uniqs)
+
+-- Create a pool, allocate a whole bunch of pointers and make sure the pointers are all aligned
+prop_mempool_all_aligned :: Property
+prop_mempool_all_aligned
+ = forAll (listOf iterationSizes) $ \sizes ->
+   testIO $ do
+    pool <- Mempool.create
+    vals <- mapM (Mempool.allocBytes pool) sizes
+    Mempool.free pool
+    -- If all pointers are aligned.
+    nonAligned <- List.map snd . List.filter (not . fst)
+                    <$> mapM (\v -> (,) <$> (fromCBool <$> Mempool.isPointerAligned v) <*> pure v) vals
+    return (counterexample (show nonAligned) $ List.null nonAligned === True)
+
 
 prop_mempool_calloc :: Property
 prop_mempool_calloc
@@ -92,6 +107,9 @@ prop_mempool_sanity_total_alloc
 
 iterations :: Gen CInt
 iterations = choose (1, 100)
+
+iterationSizes :: Gen CSize
+iterationSizes = choose (1, 100)
 
 -- Choose some number of bytes from 1 to 2mb
 -- (2mb is larger than block size)

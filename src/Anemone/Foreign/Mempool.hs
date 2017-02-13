@@ -10,9 +10,12 @@ module Anemone.Foreign.Mempool (
   , callocBytes
   , free
   , totalAllocSize
+  , isPointerAligned
   ) where
 
-import           Foreign.C.Types ( CSize(..) )
+import           Anemone.Foreign.Data ( CBool(..) )
+
+import           Foreign.C.Types ( CInt (..), CSize(..) )
 import           Foreign.Ptr ( Ptr )
 import           Foreign.Storable ( Storable(..) )
 
@@ -47,6 +50,9 @@ foreign import ccall unsafe "anemone_mempool_free"
 foreign import ccall unsafe "anemone_mempool_total_alloc_size"
   totalAllocSize :: Mempool -> IO Int64
 
+foreign import ccall unsafe "anemone_is_pointer_aligned"
+  isPointerAligned :: Ptr Void -> IO CBool
+
 alloc :: forall a. Storable a => Mempool -> IO (Ptr a)
 alloc mp =
   allocBytes mp (fromIntegral $ sizeOf (Savage.undefined :: a))
@@ -54,4 +60,3 @@ alloc mp =
 calloc :: forall a. Storable a => Mempool -> CSize -> IO (Ptr a)
 calloc mp i =
   callocBytes mp i (fromIntegral $ sizeOf (Savage.undefined :: a))
-

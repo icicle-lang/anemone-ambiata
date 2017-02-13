@@ -3,6 +3,7 @@
 module Anemone.Foreign.Data (
     CBool(..)
   , CError(..)
+  , fromCBool
 
   -- ** re-exports to avoid 'Unacceptable result type in foreign declaration'
   , CInt(..)
@@ -23,3 +24,6 @@ newtype CBool =
 newtype CError =
   CError CInt
   deriving (Eq, Ord, Read, Show, Enum, Bounded, Integral, Num, Real, FiniteBits, Bits, Storable)
+
+fromCBool :: CBool -> Bool
+fromCBool (CBool i) = i /= 0

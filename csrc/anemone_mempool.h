@@ -94,3 +94,5 @@ void * anemone_mempool_calloc (anemone_mempool_t *pool, size_t num_items, size_t
 // Get the total alloc size - this is only necessary for calling from Haskell
 int64_t anemone_mempool_total_alloc_size (anemone_mempool_t *pool);
 
+// Return true if the pointer points to an aligned address.
+bool_t anemone_is_pointer_aligned (const void *ptr);
