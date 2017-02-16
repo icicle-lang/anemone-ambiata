@@ -107,10 +107,19 @@ prop_strtod_length_80_80_10
  $ withSegv'
  $ testStrtodWellformed
 
+-- Test with a lots of zeros on the start.
+-- This could cause precision issues
 prop_strtod_length_20_20_3_zeroprefix
  = forAll (genWellformed 20 20 3) $ \dbl ->
    forAll (choose (0,20))         $ \zeros ->
    withSegv' testStrtodWellformed (replicate zeros '0' <> dbl)
+
+-- Test with whitespace padding on the end
+prop_strtod_length_20_20_3_suffix
+ = forAll (genWellformed 20 20 3) $ \dbl ->
+   forAll (choose (0,50))         $ \zeros ->
+   withSegv' testStrtodWellformed (dbl <> replicate zeros ' ')
+
 
 
 
