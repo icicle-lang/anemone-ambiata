@@ -19,7 +19,7 @@ import qualified  Data.ByteString       as B
 import qualified  Data.ByteString.Char8 as BC
 
 import Data.Char (isDigit)
-import Data.List (replicate)
+import Data.List (replicate, takeWhile)
 
 import qualified Text.Read          as Read
 
@@ -63,9 +63,27 @@ prop_strtod_on_ints
 
 testStrtodWellformed :: [Char] -> Property
 testStrtodWellformed a
- = let r  = Read.readMaybe a
+ = let r  = readIgnoreInfinite a
        bs = BC.pack a
    in (r ~~~ strtod bs)
+ where
+ -- There is a bug where zero with a very large exponent becomes Infinite!
+ --
+ -- > > read "0e12345678901234567890" :: Double
+ -- > Infinity
+ --
+ -- So what else? Strip the stuff before the 'e' and check if it's zero. If it is, return zero.
+  readIgnoreInfinite ss
+   = case Read.readMaybe ss of
+      Just dbl
+       | isInfinite dbl
+       , Just zero <- Read.readMaybe (takeWhile (\c -> c /= 'e' && c /= 'E') ss)
+       , zero == (0 :: Double)
+       -> return 0
+       | otherwise
+       -> return dbl
+      Nothing
+       -> Nothing
 
 prop_strtod_wellformed
  = forAll (genWellformed 19 19 19)
@@ -81,6 +99,12 @@ prop_strtod_length_1_20_1
  = forAll (genWellformed 1 20 1)
  $ withSegv'
  $ testStrtodWellformed
+
+prop_strtod_length_1_1_20
+ = forAll (genWellformed 1 1 20)
+ $ withSegv'
+ $ testStrtodWellformed
+
 
 prop_strtod_length_20_20_3
  = forAll (genWellformed 20 20 3)

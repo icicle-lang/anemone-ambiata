@@ -215,11 +215,9 @@ error_t anemone_strtod (char **pp, char *pe, double *output_ptr)
 
             uint64_t exp_part;
             int64_t exp_leftovers = anemone_string_to_ui64_v128_floating (&p, pe, &exp_part);
-            // We don't need to handle exponents >20 digits, do we?
-            // I think we can reasonably return an error if that happens.
-            if (exp_leftovers) return 1;
+            if (exp_leftovers < 0) return 1;
             // We convert this to a signed int, so make sure we don't overflow
-            if (exp_part > INT64_MAX) exp_part = INT64_MAX;
+            if (exp_part > INT64_MAX || exp_leftovers) exp_part = INT64_MAX;
 
             exponent -= (int64_t)exp_part;
         } else {
@@ -227,8 +225,8 @@ error_t anemone_strtod (char **pp, char *pe, double *output_ptr)
 
             uint64_t exp_part;
             int64_t exp_leftovers = anemone_string_to_ui64_v128_floating (&p, pe, &exp_part);
-            if (exp_leftovers) return 1;
-            if (exp_part > INT64_MAX) exp_part = INT64_MAX;
+            if (exp_leftovers < 0) return 1;
+            if (exp_part > INT64_MAX || exp_leftovers) exp_part = INT64_MAX;
 
             exponent += (int64_t)exp_part;
         }
