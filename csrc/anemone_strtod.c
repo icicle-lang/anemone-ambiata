@@ -1,10 +1,9 @@
 #include "anemone_base.h"
-#include "anemone_atoi_sse.h"
+#include "anemone_atoi_sse_impl.h"
 #include "anemone_strtod.h"
 
 #include <math.h>   // INFINITY, NAN
 #include <stddef.h> // size_t
-#include <stdio.h> // size_t
 
 ANEMONE_STATIC
 ANEMONE_INLINE
@@ -145,26 +144,15 @@ error_t anemone_strtod (char **pp, char *pe, double *output_ptr)
     COMPARE_WORD(nan,      NAN);
 
 
-    // Strip out leading zeros.
-    // Otherwise these can cause precision problems if there are many (eg 20) of them.
-    if (pe - p > 0 && p[0] == '0') {
-        do {
-            p++;
-        } while (pe - p > 0 && p[0] == '0');
-        p--;
-    }
-
-
-    char *ps_int_part = p;
     uint64_t int_part;
     // Parse the integer part.
     // If there are too many digits in the integer part, we raise the exponent by that.
     // So if parsing "1234" threw away the last 1 digit, we would have "123" with an exponent 1:
     // 123e1 = 1230 ~~ 1234
-    int64_t int_leftovers = anemone_string_to_ui64_v128_floating (&p, pe, &int_part);
-    if (int_leftovers < 0) return 1;
-
-    int int_part_digits = (p - ps_int_part) - int_leftovers;
+    int64_t int_leftovers;
+    int64_t int_digits;
+    if (anemone_string_to_ui64_v128_floating (&p, pe, &int_part, &int_leftovers, &int_digits)) return 1;
+    int64_t int_digits_total = int_digits + int_leftovers;
 
     int64_t exponent    = int_leftovers;
     // The significand must be unsigned to store largest 19-digit
@@ -174,62 +162,59 @@ error_t anemone_strtod (char **pp, char *pe, double *output_ptr)
     if (pe - p > 0 && p[0] == '.') {
         p++;
 
-        char *ps = p;
+        char *frac_part_start = p;
 
-        uint64_t frac_part;
         // In this case we really just ignore the leftover digits,
         // explicitly removing them from the number of digits used
-        int64_t frac_leftovers = anemone_string_to_ui64_v128_floating (&p, pe, &frac_part);
-        if (frac_leftovers < 0) return frac_leftovers;
-
-        // Count how many real digits were used by the fractional part, excluding leftovers
-        // The number of digits consumed by string_to_ui might be >19, but the real digits
-        // is assured to be <=19.
-        int digits = (p - ps) - frac_leftovers;
+        uint64_t frac_part;
+        int64_t frac_leftovers;
+        int64_t frac_digits;
+        if (anemone_string_to_ui64_v128_floating (&p, pe, &frac_part, &frac_leftovers, &frac_digits)) return 1;
+        int64_t frac_digits_incl_zero = (p - frac_part_start) - frac_leftovers;
 
         // If the int part and the frac part are more than 19, we have more than we can hold.
         // We need to throw away some of the precision on the fractional part.
-        if (int_part_digits + digits > 19) {
-          int num_over = (int_part_digits + digits) - 19;
-          digits -= num_over;
-          if (num_over < 19) {
+        // However, if the integer part is zero, do not throw anything away! We can just shift the exponent.
+        if (int_digits_total + frac_digits_incl_zero > 19 && significand != 0) {
+          int num_over = (int_digits_total + frac_digits_incl_zero) - 19;
+          frac_digits_incl_zero -= num_over;
+          if (num_over < 19 && frac_digits_incl_zero > 0) {
             // Only call ipow with small numbers, otherwise unsafe
             frac_part /= anemone_strtod_unsafe_ipow10(num_over);
           } else {
             frac_part = 0;
+            frac_digits_incl_zero = 0;
           }
         }
 
-        // We know digits < 19, because if digits == 19 it would have taken the above if
-        // which reduces digits. So this ipow is safe.
-        significand = significand * anemone_strtod_unsafe_ipow10 (digits) + frac_part;
-        exponent   -= digits;
+        if ((uint64_t)frac_digits_incl_zero < 19) {
+            significand = significand * anemone_strtod_unsafe_ipow10 (frac_digits_incl_zero);
+        }
+        significand += frac_part;
+        exponent   -= frac_digits_incl_zero;
     }
 
     // Parse the exponent part
     if (pe - p > 1 && (p[0] == 'e' || p[0] == 'E')) {
         p++;
 
+        int64_t exp_sign = 1;
         if (p[0] == '-') {
             p++;
-
-            uint64_t exp_part;
-            int64_t exp_leftovers = anemone_string_to_ui64_v128_floating (&p, pe, &exp_part);
-            if (exp_leftovers < 0) return 1;
-            // We convert this to a signed int, so make sure we don't overflow
-            if (exp_part > INT64_MAX || exp_leftovers) exp_part = INT64_MAX;
-
-            exponent -= (int64_t)exp_part;
-        } else {
-            if (p[0] == '+') p++;
-
-            uint64_t exp_part;
-            int64_t exp_leftovers = anemone_string_to_ui64_v128_floating (&p, pe, &exp_part);
-            if (exp_leftovers < 0) return 1;
-            if (exp_part > INT64_MAX || exp_leftovers) exp_part = INT64_MAX;
-
-            exponent += (int64_t)exp_part;
+            exp_sign = -1;
+        } else if (p[0] == '+') {
+            p++;
+            exp_sign = 1;
         }
+
+        uint64_t exp_part;
+        int64_t exp_leftovers;
+        int64_t exp_digits;
+        if (anemone_string_to_ui64_v128_floating (&p, pe, &exp_part, &exp_leftovers, &exp_digits)) return 1;
+        // We convert this to a signed int, so make sure we don't overflow
+        if (exp_part > INT64_MAX || exp_leftovers) exp_part = INT64_MAX;
+
+        exponent += (int64_t)exp_part * exp_sign;
     }
 
     if (significand == 0) {

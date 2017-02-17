@@ -34,8 +34,6 @@ library
                        src
 
   exposed-modules:
-                       Anemone
-
                        Anemone.Foreign.Atoi
                        Anemone.Foreign.Data
                        Anemone.Foreign.FFI

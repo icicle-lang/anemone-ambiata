@@ -133,10 +133,17 @@ prop_strtod_length_80_80_10
 
 -- Test with a lots of zeros on the start.
 -- This could cause precision issues
-prop_strtod_length_20_20_3_zeroprefix
- = forAll (genWellformed 20 20 3) $ \dbl ->
-   forAll (choose (0,20))         $ \zeros ->
-   withSegv' testStrtodWellformed (replicate zeros '0' <> dbl)
+prop_strtod_zeroprefix_20z20_0z20_0z3
+ = forAll (genWellformedZeroPrefix 20 20 20 0 3 0) $ \dbl ->
+   withSegv' testStrtodWellformed dbl
+
+prop_strtod_zeroprefix_0z20_20z20_0z3
+ = forAll (genWellformedZeroPrefix 20 0 20 20 3 0) $ \dbl ->
+   withSegv' testStrtodWellformed dbl
+
+prop_strtod_zeroprefix_0z20_0z20_20z3
+ = forAll (genWellformedZeroPrefix 20 0 20 0 3 20) $ \dbl ->
+   withSegv' testStrtodWellformed dbl
 
 -- Test with whitespace padding on the end
 prop_strtod_length_20_20_3_suffix
@@ -163,24 +170,30 @@ prop_strtod_double
 --
 genWellformed :: Int -> Int -> Int -> Gen [Char]
 genWellformed num_int num_frac num_exp
+ = genWellformedZeroPrefix num_int 0 num_frac 0 num_exp 0
+
+genWellformedZeroPrefix :: Int -> Int -> Int -> Int -> Int -> Int -> Gen [Char]
+genWellformedZeroPrefix num_int zero_int num_frac zero_frac num_exp zero_exp
  = oneof [int, float]
  where
-  num i
-   = do i' <- elements [1..i]
-        vectorOf i' (elements ['0'..'9'])
+  num n z
+   = do i' <- elements [1..n]
+        z' <- elements [0..z]
+        ds <- vectorOf i' (elements ['0'..'9'])
+        return (replicate z' '0' <> ds)
 
   int
-   = do i <- num num_int
+   = do i <- num num_int zero_int
         e <- expo
         return (i <> e)
 
   float
-   = do i <- num num_int
-        f <- num num_frac
+   = do i <- num num_int zero_int
+        f <- num num_frac zero_frac
         e <- expo
         return (i <> "." <> f <> e)
   expo
-   = oneof [(("e" <>) <$> num num_exp), return ""]
+   = oneof [(("e" <>) <$> num num_exp zero_exp), return ""]
 
 return []
 tests = $disorderCheckEnvAll TestRunMore

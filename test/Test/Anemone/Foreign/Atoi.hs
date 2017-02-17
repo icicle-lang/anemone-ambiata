@@ -18,6 +18,7 @@ import qualified  Data.ByteString       as B
 import qualified  Data.ByteString.Char8 as BC
 
 import Data.Char (isDigit)
+import Data.List (replicate)
 
 
 testAtoi  :: Atoi.AtoiT
@@ -71,6 +72,18 @@ testAtoiBorders check
         k :: Integer <- elements [-1,1]
         return (k * (2 ^ i) + j)
 
+testAtoiLeadingZero :: Atoi.AtoiT
+          -> Property
+testAtoiLeadingZero check
+ = forAll nums
+  (testAtoi check . BC.pack)
+ where
+  nums
+   = do i <- elements [0..19]
+        ds <- vectorOf i (elements ['0'..'9'])
+        prefix <- elements [0..19]
+        return (replicate prefix '0' <> ds)
+
 
 prop_atoi_scalar
  = testAtoi Atoi.atoi_scalar
@@ -80,6 +93,9 @@ prop_atoi_scalar_wellformed
 
 prop_atoi_scalar_borders
  = testAtoiBorders Atoi.atoi_scalar
+
+prop_atoi_scalar_leading_zero
+ = testAtoiLeadingZero Atoi.atoi_scalar
 
 
 
@@ -92,6 +108,9 @@ prop_atoi_vector128_wellformed
 
 prop_atoi_vector128_borders
  = testAtoiBorders Atoi.atoi_vector128
+
+prop_atoi_vector128_leading_zero
+ = testAtoiLeadingZero Atoi.atoi_vector128
 
 
 return []

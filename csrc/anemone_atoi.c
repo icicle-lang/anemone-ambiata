@@ -15,6 +15,24 @@ error_t anemone_string_to_i64 (char **pp, char *pe, int64_t *output_ptr)
         buffer_size--;
     }
 
+    /* strip out leading zeros. */
+    /* otherwise these can cause precision problems if there are many (eg 20) of them. */
+    if (pe - p > 0 && p[0] == '0') {
+        /* move ahead until we reach the first non-zero */
+        do {
+            p++;
+        } while (pe - p > 0 && p[0] == '0');
+        /* if there are no more digits, it must be zero */
+        if (pe - p == 0 || !anemone_is_digit(p[0])) {
+            *output_ptr = 0;
+            *pp = p;
+            return 0;
+        }
+        /* fix up buffer size with what we lost */
+        buffer_size = pe - p; 
+    }
+
+
     /* validate digits */
     uint64_t digits = 0;
     while (digits < buffer_size) {
@@ -58,7 +76,7 @@ error_t anemone_string_to_i64 (char **pp, char *pe, int64_t *output_ptr)
 
             int64_t value_signed = value * sign;
             *output_ptr = value_signed;
-            *pp += digits + sign_size;
+            *pp = p + digits + sign_size;
             return 0;
 
         default:
