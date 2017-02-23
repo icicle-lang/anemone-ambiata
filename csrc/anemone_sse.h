@@ -104,4 +104,18 @@ unsigned int anemone_sse_first_nondigit (const __m128i m)
     return index;
 }
 
+/* 
+compute indices at the same time: index of the first non-digit (anything other than '0'-'9') and index of the first non-zero.
+idea is if first non-zero is 0 (ideal case), shouldn't need to cut off trailing zeros.
+*/
+ANEMONE_INLINE
+void anemone_sse_first_nondigit_first_nonzero (const __m128i m, unsigned int* out_first_nondigit, unsigned int* out_first_nonzero)
+{
+    const __m128i digit_range = _mm_setr_epi8('0', '9', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    unsigned int nondigit = _mm_cmpestri(digit_range, 2, m, 16, _SIDD_UBYTE_OPS | _SIDD_CMP_RANGES | _SIDD_NEGATIVE_POLARITY);
+    unsigned int nonzero  = _mm_cmpestri(digit_range, 1, m, 16, _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_ANY | _SIDD_NEGATIVE_POLARITY);
+    *out_first_nondigit = nondigit;
+    *out_first_nonzero  = nonzero;
+}
+
 #endif//__ANEMONE_SSE_H

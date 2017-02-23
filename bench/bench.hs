@@ -106,9 +106,10 @@ bench_atoi
  where
   go_all nm f
    = bgroup nm
-   $ fmap (\str -> bench (show str) $ nf f str)
+   $ fmap (\str -> bench (show str) $ nf f (pad str))
    [ "0", "1", "-123", "123456", "-12345678", "1234567890", "-123456789012345", "1234567890123456789", "12345678901234567890"
    ]
+  pad str = str <> " (padding added) "
 
 
 bench_strtod :: Benchmark
@@ -122,11 +123,12 @@ bench_strtod
  where
   go_all nm f
    = bgroup nm
-   $ fmap (\str -> bench (show str) $ nf f str)
+   $ fmap (\str -> bench (show str) $ nf f (pad str))
    [ "0", "1", "-123", "123456", "-12345678", "1234567890", "-123456789012345"
    , "0.0" , "0.12345678" , "0.1234567890123456"
    , "123.123", "1234567.1234567", "1234567890.1234567890"
    ]
+  pad str = str <> " (padding added) "
 
 bench_hash :: Benchmark
 bench_hash

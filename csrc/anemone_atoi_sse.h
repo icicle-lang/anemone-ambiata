@@ -4,12 +4,6 @@
 #include "anemone_base.h"
 
 /*
-  parse string to unsigned 64-bit integer.
-  does not strip whitespace.
- */
-error_t anemone_string_to_ui64_v128 (char **pp, char *pe, uint64_t *out_val);
-
-/*
   parse string to signed 64-bit integer.
   does not strip whitespace.
  */
