@@ -27,6 +27,30 @@ getHeaderFile :: ByteString
 Then, when you load the Jetski generated dylib, the Haskell program will have already loaded the Anemone functions, so any Anemone references in the dylib should work.
 
 
+## Parsing Doubles
+
+Anemone has a function `parseDouble` for parsing a `Double` value from a `ByteString`.
+The function has been benchmarked as being about 3 times faster than the double parser in Attoparsec (benchmark code is in Walrus).
+However, Attoparsec successfully parses some strings that Anemone does not and GNU Glibc parses still more strings that neither Attoparsec nor Anemone accept.
+The spec for Anemone's double parser is as follows:
+```
+digits := { '0' .. '9'  } -- The set of digits
+
+validDouble :=
+    [ '-' ]                        -- Optional '-'. A leading '+' is not supported
+    nonempty digits
+    [ '.' (nonempty digits) ]      -- Optional decimal point followed by non-empty list of digits
+    [ (`e`|`E`) ['+' | '-'] (nonempty digits) ] -- Optional sign on exponent
+```
+The parser also accepts the strings `nan`, `inf` and `infinity` (case insensitive) with an optional leading `-` sign. As for numbers, a leading `+` is not supported.
+
+The strings specifically not accepted by Anemone include:
+
+* Encodings other than decimal (eg octal or hexadecimal).
+* Numbers that start with the decimal point (eg `.123`).
+* Numbers that end in a decial point (eg `12.`) or have the decimal point immediately preceding the exponent (eg `3.e5`).
+
+
 ## Haskell wrappers
 There are wrapper functions under `Anemone.Foreign`.
 
