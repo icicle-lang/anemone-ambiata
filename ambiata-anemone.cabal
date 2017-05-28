@@ -38,6 +38,7 @@ library
                        Anemone.Foreign.Atoi
                        Anemone.Foreign.Data
                        Anemone.Foreign.FFI
+                       Anemone.Foreign.Grisu2
                        Anemone.Foreign.Hash
                        Anemone.Foreign.Memcmp
                        Anemone.Foreign.Memcmp.Base
@@ -50,6 +51,7 @@ library
                        Anemone.Foreign.VInt
 
                        Anemone.Parser
+                       Anemone.Pretty
 
                        Anemone.Embed
 
@@ -61,6 +63,7 @@ library
                        anemone_atoi_sse.h
                        anemone_base.h
                        anemone_ffi.h
+                       anemone_grisu2.h
                        anemone_hash.h
                        anemone_memcmp.h
                        anemone_memcmp_zoo.h
@@ -76,6 +79,7 @@ library
                        anemone_atoi_sse.h
                        anemone_base.h
                        anemone_ffi.h
+                       anemone_grisu2.h
                        anemone_hash.h
                        anemone_memcmp.h
                        anemone_memcmp_zoo.h
@@ -90,6 +94,7 @@ library
                        csrc/anemone_atoi.c
                        csrc/anemone_atoi_sse.c
                        csrc/anemone_ffi.c
+                       csrc/anemone_grisu2.c
                        csrc/anemone_hash.c
                        csrc/anemone_memcmp.c
                        csrc/anemone_mempool.c
@@ -120,6 +125,7 @@ test-suite test
                      , ambiata-disorder-corpus
                      , ambiata-disorder-jack
                      , ambiata-p
+                     , array                           == 0.5.*
                      , bytestring                      == 0.10.*
                      , QuickCheck                      >= 2.8.2      && < 2.9
                      , quickcheck-instances            == 0.3.*

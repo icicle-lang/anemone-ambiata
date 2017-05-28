@@ -8,6 +8,7 @@ import qualified Test.Anemone.Foreign.Pack
 import qualified Test.Anemone.Foreign.Strtod
 import qualified Test.Anemone.Foreign.Time
 import qualified Test.Anemone.Foreign.VInt
+import qualified Test.Anemone.Roundtrip
 
 main :: IO ()
 main =
@@ -20,4 +21,5 @@ main =
     , Test.Anemone.Foreign.Strtod.tests
     , Test.Anemone.Foreign.Time.tests
     , Test.Anemone.Foreign.VInt.tests
+    , Test.Anemone.Roundtrip.tests
     ]

@@ -1,5 +1,7 @@
-{-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 module Anemone.Foreign.Mempool (
     Mempool(..)
@@ -15,12 +17,15 @@ module Anemone.Foreign.Mempool (
 
 import           Anemone.Foreign.Data ( CBool(..) )
 
+import           Data.Void (Void)
+
 import           Foreign.C.Types ( CInt (..), CSize(..) )
 import           Foreign.Ptr ( Ptr )
 import           Foreign.Storable ( Storable(..) )
 
+import           GHC.Generics (Generic)
+
 import           P
-import           Data.Void (Void)
 
 import           System.IO (IO)
 
@@ -28,12 +33,12 @@ import qualified Prelude as Savage
 
 
 -- | The Mempool constructor must be exposed to work in FFI calls.
--- However, it must not be used in any other places.
--- The only way to construct a Mempool is by calling @create@.
+--   However, it must not be used in any other places.
+--   The only way to construct a Mempool is by calling @create@.
 --
--- This infinite knot here should enforce this.
 newtype Mempool =
   Mempool (Ptr Void)
+  deriving (Eq, Ord, Show, Storable, Generic)
 
 foreign import ccall unsafe "anemone_mempool_create"
   create :: IO Mempool
