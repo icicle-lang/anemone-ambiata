@@ -53,7 +53,7 @@ renderTimeError = \case
       "Failed to parse date: " <> T.pack (show bs)
   TimeInvalidDate (YearMonthDay y m d) ->
     T.pack $
-      printf "Parsed date was not in the gregorian calendar: %04d-%02d-%02" y m d
+      printf "Parsed date was not in the gregorian calendar: %04d-%02d-%02d" y m d
 
 parseDay :: ByteString -> Either TimeError (Day, ByteString)
 parseDay bs@(PS fp off len) =
