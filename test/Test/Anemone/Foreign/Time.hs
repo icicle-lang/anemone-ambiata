@@ -64,6 +64,24 @@ prop_parseDay =
     in
       parseDay str === eday
 
+prop_parseRenderError :: Property
+prop_parseRenderError =
+  gamble (choose (0, 9999)) $ \y ->
+  gamble (choose (1, 12)) $ \m ->
+  gamble (choose (1, 31)) $ \d ->
+  gamble (listOf arbitrary) $ \xs ->
+    let
+      ymd =
+        YearMonthDay y m d
+
+      eymd =
+        fmap (const (ymd, Char8.pack xs)) $ mkDay ymd
+
+      str =
+        Char8.pack $ printf "%04d-%02d-%02d%s" y m d xs
+    in
+      first renderTimeError (parseYearMonthDay str) === first renderTimeError eymd
+
 return []
 tests =
   $disorderCheckEnvAll TestRunMore
